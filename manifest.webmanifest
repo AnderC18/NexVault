@@ -1,0 +1,14 @@
+{
+  "name": "NexVault",
+  "short_name": "NexVault",
+  "description": "Tu hub de juegos y personal: APKs, mods y texturas de Minecraft y más.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06060F",
+  "theme_color": "#06060F",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

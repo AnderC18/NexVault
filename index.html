@@ -1,11 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexVault</title>
+    <title>NexVault — Tu hub de juegos y personal</title>
+    <meta name="description" content="NexVault: APKs, mods y texturas de Minecraft y más recursos, organizados en un solo lugar.">
+    <meta name="theme-color" content="#06060F">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="NexVault">
+    <meta property="og:title" content="NexVault — Tu hub de juegos y personal">
+    <meta property="og:description" content="APKs, mods y texturas de Minecraft y más recursos, organizados en un solo lugar.">
+    <meta property="og:url" content="https://anderc18.github.io/NexVault/">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script>try { if (localStorage.getItem("nv-theme") === "light") document.documentElement.classList.add("light"); } catch {}</script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
@@ -39,68 +50,128 @@
             --purple: #7C3AED; --purple-light: #A78BFA; --blue: #2563EB; --blue-light: #93C5FD;
             --white: #EEF0FF; --muted: rgba(238,240,255,0.45);
             --danger: #F87171; --danger-bg: rgba(248,113,113,0.1); --danger-border: rgba(248,113,113,0.25);
+            --ghost-bg: rgba(255,255,255,0.04); --ghost-border: rgba(255,255,255,0.09); --hover: rgba(255,255,255,0.07);
+            --card-hover: rgba(255,255,255,0.065); --modal-bg: #0D0D1C; --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
+            --neb: 1; --green: #4ADE80;
         }
-        body { margin:0; padding:0; min-height:100vh; background:var(--bg); font-family:system-ui,-apple-system,sans-serif; color:var(--white); overflow-x:hidden; }
+        html.light {
+            --bg: #F3F4FA; --surface: rgba(255,255,255,0.8); --border: rgba(30,30,80,0.1);
+            --purple-light: #6D28D9; --blue-light: #1D4ED8;
+            --white: #17173A; --muted: rgba(23,23,58,0.58);
+            --danger: #DC2626; --danger-bg: rgba(220,38,38,0.08); --danger-border: rgba(220,38,38,0.25);
+            --ghost-bg: rgba(255,255,255,0.8); --ghost-border: rgba(30,30,80,0.12); --hover: rgba(30,30,80,0.06);
+            --card-hover: #FFFFFF; --modal-bg: #FFFFFF; --input-bg: #FFFFFF; --input-border: rgba(30,30,80,0.16);
+            --neb: 0.4; --green: #16A34A;
+        }
+        body { margin:0; padding:0; min-height:100vh; background:var(--bg); font-family:system-ui,-apple-system,sans-serif; color:var(--white); overflow-x:hidden; transition:background 0.25s }
         @keyframes nebDrift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-40px) scale(1.12)}}
         @keyframes nebDrift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-60px,50px) scale(1.08)}}
         @keyframes nebDrift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,30px) scale(1.05)}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
+        .nebula-1,.nebula-2,.nebula-3{opacity:var(--neb)}
         .nebula-1{position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,0.28) 0%,transparent 70%);top:-200px;right:-150px;filter:blur(50px);animation:nebDrift1 14s ease-in-out infinite;pointer-events:none;z-index:0}
         .nebula-2{position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,0.22) 0%,transparent 70%);bottom:-150px;left:-120px;filter:blur(60px);animation:nebDrift2 18s ease-in-out infinite;pointer-events:none;z-index:0}
         .nebula-3{position:fixed;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,0.15) 0%,transparent 70%);top:45%;left:38%;filter:blur(70px);animation:nebDrift3 22s ease-in-out infinite;pointer-events:none;z-index:0}
         .main-container{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 24px 100px}
-        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:44px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+        .header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border)}
         .brand{display:flex;align-items:center;gap:14px}
-        .brand-title{font-size:22px;font-weight:700;background:linear-gradient(90deg,var(--purple-light),var(--blue-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+        .brand-title{font-size:22px;font-weight:700;background:linear-gradient(90deg,var(--purple-light),var(--blue-light));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
         .btn-group{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-        .btn-ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
-        .btn-ghost:hover{background:rgba(255,255,255,0.08);color:var(--white)}
+        button,input{font-family:inherit}
+        .btn-ghost{background:var(--ghost-bg);border:1px solid var(--ghost-border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
+        .btn-ghost:hover{background:var(--hover);color:var(--white)}
+        .btn-ghost.square{padding:8px 10px}
+        .admin-only{display:none}
         .btn-primary{background:linear-gradient(135deg,#7C3AED 0%,#2563EB 100%);border:none;color:#fff;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
-        .btn-edit{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--purple-light);padding:4px 9px;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:3px}
-        .btn-danger{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger);padding:4px 9px;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:3px}
-        .admin-banner{display:none;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:10px;padding:10px 18px;align-items:center;justify-content:space-between;margin-bottom:28px;font-size:13px;color:var(--purple-light);animation:fadeUp 0.28s ease both}
+        .btn-edit{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--purple-light);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:3px}
+        .btn-danger{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:3px}
+        .admin-banner{display:none;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:10px;padding:10px 18px;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:13px;color:var(--purple-light);animation:fadeUp 0.28s ease both}
+
+        .search-wrap{position:relative;margin-bottom:22px}
+        .search-wrap .ti-search{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--muted);pointer-events:none}
+        .search-input{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 44px 12px 42px;color:var(--white);font-size:14px;outline:none;transition:border-color 0.2s, box-shadow 0.2s}
+        .search-input:focus{border-color:rgba(167,139,250,0.5);box-shadow:0 0 0 3px rgba(124,58,237,0.15)}
+        .search-input::placeholder{color:var(--muted)}
+        .search-kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-family:monospace}
+        .search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:17px;padding:6px;display:none}
+
         .tabs-container,.subcats-container{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
         .subcats-container{margin-bottom:32px}
+        .subcats-container:empty,.tabs-container:empty{display:none}
         .cat-item,.subcat-item{display:flex;align-items:center;gap:6px}
         .admin-edit-group{display:none;gap:4px}
         .cat-item:hover .admin-edit-group,.subcat-item:hover .admin-edit-group{display:flex}
         @media (hover:none){.admin-edit-group{display:flex}}
         .cat-tab{display:flex;align-items:center;gap:9px;padding:10px 20px;border-radius:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all 0.18s}
         .cat-tab.active{border-color:rgba(167,139,250,0.45);background:rgba(124,58,237,0.18);color:var(--white);box-shadow:0 0 24px rgba(124,58,237,0.2)}
-        .cat-tab:hover:not(.active){background:rgba(255,255,255,0.06);border-color:rgba(167,139,250,0.2);color:var(--white)}
+        .cat-tab:hover:not(.active){background:var(--hover);border-color:rgba(167,139,250,0.2);color:var(--white)}
+        .cat-tab.virtual{border-style:dashed}
+        .tab-count{font-size:11px;font-weight:600;background:rgba(167,139,250,0.18);color:var(--purple-light);border-radius:10px;padding:1px 7px}
+        .tabs-sep{width:1px;height:26px;background:var(--border);margin:0 4px}
         .sub-pill{padding:6px 18px;border-radius:20px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all 0.18s}
         .sub-pill.active{border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.14);color:var(--blue-light)}
-        .sub-pill:hover:not(.active){background:rgba(255,255,255,0.06)}
-        .links-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .sub-pill:hover:not(.active){background:var(--hover)}
+
+        .links-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
         .links-count{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
-        .links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;animation:fadeUp 0.28s ease both}
-        .link-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;transition:all 0.22s ease}
-        .link-card:hover{background:rgba(255,255,255,0.065);border-color:rgba(167,139,250,0.25);transform:translateY(-2px);box-shadow:0 12px 40px rgba(124,58,237,0.18)}
-        .link-title{font-size:15px;font-weight:600;color:var(--white);line-height:1.3}
+        .links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;animation:fadeUp 0.28s ease both}
+        .link-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;transition:all 0.22s ease}
+        .link-card:hover{background:var(--card-hover);border-color:rgba(167,139,250,0.25);transform:translateY(-2px);box-shadow:0 12px 40px rgba(124,58,237,0.18)}
+        .card-top{display:flex;align-items:flex-start;gap:12px}
+        .type-badge{width:38px;height:38px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--purple-light);background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(37,99,235,0.14));border:1px solid rgba(167,139,250,0.2)}
+        .card-head{flex:1;min-width:0}
+        .link-title{font-size:15px;font-weight:600;color:var(--white);line-height:1.3;word-break:break-word}
+        .badge-new{display:inline-block;margin-left:7px;vertical-align:2px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--green);border:1px solid currentColor;border-radius:5px;padding:0 5px}
+        .crumb{font-size:11px;color:var(--muted);margin-top:3px}
+        .chips{display:flex;flex-wrap:wrap;gap:5px}
+        .chip{font-size:10.5px;font-weight:600;letter-spacing:0.3px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-family:monospace}
+        .chip-type{color:var(--purple-light);border-color:rgba(167,139,250,0.3)}
+        .chip-tag{color:var(--blue-light);border-color:rgba(37,99,235,0.3)}
         .link-desc{font-size:12px;color:var(--muted);line-height:1.55;margin:0}
-        .link-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+        .link-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:auto}
+        .actions-left,.actions-admin{display:flex;align-items:center;gap:6px}
         .btn-open{background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.3);color:var(--blue-light);padding:7px 15px;border-radius:8px;cursor:pointer;font-family:monospace;font-size:12px;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
-        .btn-open:hover{background:rgba(37,99,235,0.25);color:#BFDBFE}
-        .add-card-placeholder{background:rgba(124,58,237,0.05);border:2px dashed rgba(124,58,237,0.2);border-radius:14px;padding:24px;cursor:pointer;text-align:center;color:rgba(167,139,250,0.55);font-size:13px;display:none;flex-direction:column;align-items:center;gap:8px;transition:all 0.2s}
-        .add-card-placeholder:hover{background:rgba(124,58,237,0.1);color:var(--purple-light)}
-        .empty-state{text-align:center;padding:70px 20px;color:rgba(238,240,255,0.25);animation:fadeUp 0.28s ease both}
+        .btn-open:hover{background:rgba(37,99,235,0.25)}
+        .icon-btn{background:var(--ghost-bg);border:1px solid var(--ghost-border);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.18s;flex-shrink:0;padding:0}
+        .icon-btn:hover{color:var(--white);background:var(--hover)}
+        .icon-btn.star{background:none;border:none;width:28px;height:28px;font-size:18px}
+        .icon-btn.star.on{color:#FACC15}
+        .add-card-placeholder{background:rgba(124,58,237,0.05);border:2px dashed rgba(124,58,237,0.2);border-radius:14px;padding:24px;cursor:pointer;text-align:center;color:var(--purple-light);opacity:0.7;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
+        .add-card-placeholder:hover{background:rgba(124,58,237,0.1);opacity:1}
+        .empty-state{text-align:center;padding:70px 20px;color:var(--muted);opacity:0.75;animation:fadeUp 0.28s ease both}
+
         #loadingScreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:9999}
         .spinner{width:36px;height:36px;border:3px solid rgba(167,139,250,0.2);border-top-color:#A78BFA;border-radius:50%;animation:spin 0.8s linear infinite}
         #savingBadge{position:fixed;top:16px;right:16px;z-index:9998;background:rgba(124,58,237,0.2);border:1px solid rgba(167,139,250,0.3);border-radius:10px;padding:8px 16px;font-size:12px;color:var(--purple-light);display:none;align-items:center;gap:8px;backdrop-filter:blur(10px)}
         .saving-spinner{width:12px;height:12px;border:2px solid rgba(167,139,250,0.3);border-top-color:var(--purple-light);border-radius:50%;animation:spin 0.8s linear infinite}
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
-        .modal-content{background:#0D0D1C;border:1px solid rgba(167,139,250,0.25);border-radius:18px;padding:32px;width:100%;max-width:430px;box-shadow:0 24px 70px rgba(0,0,0,0.6)}
-        .modal-title{font-size:19px;font-weight:700;background:linear-gradient(90deg,var(--purple-light),var(--blue-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:24px}
+        .modal-content{background:var(--modal-bg);border:1px solid rgba(167,139,250,0.25);border-radius:18px;padding:30px;width:100%;max-width:440px;box-shadow:0 24px 70px rgba(0,0,0,0.6);max-height:calc(100vh - 40px);overflow-y:auto;box-sizing:border-box}
+        .modal-title{font-size:19px;font-weight:700;background:linear-gradient(90deg,var(--purple-light),var(--blue-light));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:22px;word-break:break-word}
         .form-group{margin-bottom:16px}
         .label-style{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
-        .input-style{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;color:var(--white);font-size:14px;outline:none;box-sizing:border-box}
+        .input-style{width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;padding:10px 14px;color:var(--white);font-size:14px;outline:none;box-sizing:border-box}
         .input-style:focus{border-color:rgba(167,139,250,0.5)}
-        .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
-        .export-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:monospace;font-size:11px;color:rgba(238,240,255,0.65);max-height:280px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:18px;text-align:left}
+        .hint{font-size:11px;color:var(--muted);margin-top:6px}
+        .modal-footer{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:22px}
+        .export-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:monospace;font-size:11px;color:var(--muted);max-height:280px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:18px;text-align:left}
+        html.light .export-box{background:rgba(30,30,80,0.04)}
+        .qr-box{background:#fff;border-radius:12px;padding:12px;width:220px;margin:0 auto 14px}
+        .qr-box svg{display:block;width:100%;height:auto}
+        .qr-url{font-family:monospace;font-size:11px;color:var(--muted);word-break:break-all;text-align:center;max-height:60px;overflow-y:auto}
         #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10000;max-width:90vw;padding:12px 18px;border-radius:10px;font-size:13px;line-height:1.5;display:none;backdrop-filter:blur(10px);background:rgba(124,58,237,0.2);border:1px solid rgba(167,139,250,0.35);color:var(--white)}
         #toast.error{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
         ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(167,139,250,0.3);border-radius:4px}
+
+        @media (max-width:640px){
+            .main-container{padding:20px 14px 80px}
+            .header{flex-direction:column;align-items:flex-start}
+            .btn-group{justify-content:flex-start}
+            .search-kbd{display:none}
+            .links-grid{grid-template-columns:1fr}
+            .cat-tab{padding:9px 14px;font-size:13px}
+            .tabs-sep{display:none}
+        }
     </style>
 </head>
 <body>
@@ -122,7 +193,7 @@
 <div class="main-container">
     <div class="header">
         <div class="brand">
-            <svg viewBox="0 0 48 48" width="46" height="46" style="filter:drop-shadow(0 0 10px rgba(124,58,237,0.55));flex-shrink:0">
+            <svg viewBox="0 0 48 48" width="46" height="46" style="filter:drop-shadow(0 0 10px rgba(124,58,237,0.55));flex-shrink:0" aria-hidden="true">
                 <defs>
                     <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#2563EB"/>
@@ -133,19 +204,29 @@
                 <path d="M28 11 L19 25 H24.5 L20 37 L31 22 H25.5 Z" fill="white" opacity="0.95"/>
             </svg>
             <div>
-                <div class="brand-title">NexVault</div>
+                <h1 class="brand-title" style="margin:0">NexVault</h1>
                 <div style="font-size:12px;color:var(--muted);margin-top:1px">Tu hub de juegos y personal</div>
             </div>
         </div>
         <div class="btn-group">
-            <button class="btn-ghost" onclick="openExportModal()"><i class="ti ti-upload" style="font-size:15px"></i> Exportar configuración</button>
-            <button class="btn-ghost" id="adminBtn" onclick="toggleAdminMode()"><i class="ti ti-lock" id="adminIcon" style="font-size:15px"></i> <span id="adminBtnText">Administrador</span></button>
+            <button class="btn-ghost square" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema"><i class="ti ti-sun" id="themeIcon" style="font-size:16px"></i></button>
+            <button class="btn-ghost admin-only" onclick="openExportModal()"><i class="ti ti-download" style="font-size:15px"></i> Copia de seguridad</button>
+            <button class="btn-ghost admin-only" onclick="document.getElementById('importFile').click()"><i class="ti ti-file-import" style="font-size:15px"></i> Importar</button>
+            <button class="btn-ghost" id="adminBtn" onclick="toggleAdminMode()"><i class="ti ti-lock" id="adminIcon" style="font-size:15px"></i> <span id="adminBtnText">Entrar como admin</span></button>
         </div>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
     </div>
 
     <div class="admin-banner" id="adminBanner">
-        <span><i class="ti ti-sparkles" style="font-size:15px;margin-right:7px"></i>Modo administrador — edita, agrega y elimina lo que quieras</span>
+        <span><i class="ti ti-sparkles" style="font-size:15px;margin-right:7px"></i>Modo administrador — edita, ordena, agrega y elimina lo que quieras</span>
         <button class="btn-ghost" style="padding:4px 12px;font-size:12px" onclick="logoutAdmin()">Cerrar sesión</button>
+    </div>
+
+    <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input id="searchInput" class="search-input" type="search" placeholder="Buscar mods, APKs, texturas..." autocomplete="off" aria-label="Buscar">
+        <span class="search-kbd" id="searchKbd">/</span>
+        <button class="search-clear" id="searchClear" aria-label="Borrar búsqueda"><i class="ti ti-x"></i></button>
     </div>
 
     <div class="tabs-container" id="categoriesContainer"></div>
@@ -167,60 +248,42 @@
     </div>
 </div>
 
-<!-- Modal Export -->
+<!-- Modal copia de seguridad -->
 <div class="modal-overlay" id="exportModal" onclick="closeModal('exportModal')">
     <div class="modal-content" style="max-width:540px" onclick="event.stopPropagation()">
-        <div class="modal-title"><i class="ti ti-upload" style="margin-right:8px"></i>Exportar configuración</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.65">Copia esto y pégalo en el chat cuando quieras que yo haga cambios.</p>
+        <div class="modal-title"><i class="ti ti-download" style="margin-right:8px"></i>Copia de seguridad</div>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 16px;line-height:1.65">Todos tus datos en formato JSON. Descárgala y guárdala: con <b>Importar</b> puedes restaurarla cuando quieras.</p>
         <div class="export-box" id="exportJsonBox"></div>
         <div class="modal-footer">
             <button class="btn-ghost" onclick="closeModal('exportModal')">Cerrar</button>
-            <button class="btn-primary" id="copyBtn" onclick="doCopyConfig()"><i class="ti ti-copy" style="font-size:14px"></i> Copiar todo</button>
+            <button class="btn-ghost" id="copyBtn" onclick="doCopyConfig()"><i class="ti ti-copy" style="font-size:14px"></i> Copiar</button>
+            <button class="btn-primary" onclick="downloadBackup()"><i class="ti ti-download" style="font-size:14px"></i> Descargar .json</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal QR -->
+<div class="modal-overlay" id="qrModal" onclick="closeModal('qrModal')">
+    <div class="modal-content" style="max-width:340px;text-align:center" onclick="event.stopPropagation()">
+        <div class="modal-title" id="qrTitle">Código QR</div>
+        <div class="qr-box" id="qrBox"></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Escanéalo con la cámara del móvil para abrir el enlace</p>
+        <div class="qr-url" id="qrUrl"></div>
+        <div class="modal-footer" style="justify-content:center">
+            <button class="btn-ghost" onclick="closeModal('qrModal')">Cerrar</button>
         </div>
     </div>
 </div>
 
 <script>
-// ── Utilidades de seguridad ──────────────────────────────────────────────
-// Todo texto que venga de la nube se escapa antes de meterlo en el HTML.
-function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
-}
-// Solo se permiten enlaces http(s); cualquier otra cosa (javascript:, data:...) se descarta.
-function safeUrl(u) {
-    try { const p = new URL(String(u ?? "").trim()); return (p.protocol === "https:" || p.protocol === "http:") ? p.href : null; }
-    catch { return null; }
-}
-// Nombres de ícono Tabler: solo letras, números y guiones.
-function safeIcon(i) { return /^ti-[a-z0-9-]+$/.test(i || "") ? i : "ti-folder"; }
-
-let toastTimer = null;
-function showToast(msg, isError = false, ms = 4500) {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.className = isError ? "error" : "";
-    t.style.display = "block";
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { t.style.display = "none"; }, ms);
-}
-
-function adminButton(cls, iconCls, label, handler) {
-    const b = document.createElement("button");
-    b.className = cls;
-    b.innerHTML = `<i class="ti ${iconCls}"></i>${label ? " " + esc(label) : ""}`;
-    b.onclick = (e) => { e.stopPropagation(); handler(); };
-    return b;
-}
-
+// ── Datos iniciales (solo se usan si la nube aún no tiene nada) ──────────
 const DATOS_PREDETERMINADOS = {
     _version: 2,
     categories: [
         {
             id: "juegos", name: "Juegos", icon: "ti-device-gamepad-2",
             subcategories: [
-                {
-                    id: "mc-versiones", name: "Versiones de Minecraft", links: []
-                },
+                { id: "mc-versiones", name: "Versiones de Minecraft", links: [] },
                 {
                     id: "mc-apks", name: "APKs de Minecraft",
                     links: [
@@ -230,33 +293,33 @@ const DATOS_PREDETERMINADOS = {
                 {
                     id: "mc-mods", name: "Mods de Minecraft",
                     links: [
-                        { id: "mod1",  name: "AI Bots",             url: "https://www.mediafire.com/file/ckaq1ihgwso1stf/Advanced_Ai_Bots_%2528Load_Chunks%2529.mcaddon/file",                            description: "" },
-                        { id: "mod2",  name: "Creative Addon",       url: "https://www.mediafire.com/file/av210khednz6wz0/criativo_addon_by_ncmine_-MConverter.eu-.mcpack/file",                         description: "" },
-                        { id: "mod3",  name: "Effortless Building",  url: "https://www.mediafire.com/file/sev1zakxm7x7ab1/Effortless_Building_v3.1.mcaddon/file",                                        description: "" },
-                        { id: "mod4",  name: "JEI BE Destock",       url: "https://www.mediafire.com/file/7u8bnhibnn322dk/JEI_Recipe_Book_Layout_v1.2.1_%2528VDX_Desktop_UI%2529.mcpack/file",           description: "" },
-                        { id: "mod5",  name: "JEI BE",               url: "https://www.mediafire.com/file/jhlihake7js8olo/JEI_Recipe_Book_Layout_v1.2.20.mcpack/file",                                   description: "" },
-                        { id: "mod6",  name: "Mochilas",             url: "https://www.mediafire.com/file/jlri919ls7kbzoe/mochilas.mcaddon.zip/file",                                                   description: "" },
-                        { id: "mod7",  name: "Night Vision",         url: "https://www.mediafire.com/file/tew8qoi8frdjkdp/Night_Vision_Addon_1.3.mcpack/file",                                           description: "" },
-                        { id: "mod8",  name: "Security Craft BP",    url: "https://www.mediafire.com/file/qp6tpkdopr2adlb/SecurityBeCraft_BP.mcpack/file",                                               description: "" },
-                        { id: "mod9",  name: "Security Craft RP",    url: "https://www.mediafire.com/file/4vt6teog23eja36/SecurityCraft_RP.mcpack/file",                                                 description: "" },
-                        { id: "mod10", name: "Backpacks",            url: "https://www.mediafire.com/file/n15uyc19yeov5qs/sophisticangel_backpack_v1.0.0.mcaddon/file",                                  description: "" },
-                        { id: "mod11", name: "Tumbas",               url: "https://www.mediafire.com/file/8my0o2n5ni02hvh/StoneTombs.mcaddon.zip/file",                                                 description: "" },
-                        { id: "mod12", name: "Luz Dinámica",         url: "https://www.mediafire.com/file/oldpwmsdu9bov2f/System_Dynamic_Lights_BH_V3.2.3.mcpack/file",                                  description: "" },
-                        { id: "mod13", name: "Tradeos Infinitos",    url: "https://www.mediafire.com/file/8tf610nhedminho/tradeos_infinits_%2528all_versions%2529.mcpack/file",                          description: "" },
-                        { id: "mod14", name: "Hacks",                url: "https://www.mediafire.com/file/3bt8b97t0vmq6hu/Ultimate_Cheat_Menu_v1.1.7.mcpack/file",                                       description: "" },
-                        { id: "mod15", name: "Waypoints BP",         url: "https://www.mediafire.com/file/xvq1hddnrpjqrl8/Vanilla_Waypoints_v1.9.2_%255BBehavior%255D_-_By_DARKLEXx.mcpack/file",      description: "" },
-                        { id: "mod16", name: "Waypoints RP",         url: "https://www.mediafire.com/file/mzx11v2itdswjuv/Vanilla_Waypoints_v1.9.2_%255BResource%255D_-_By_DARKLEXx.mcpack/file",      description: "" },
-                        { id: "mod17", name: "Treecapitator",        url: "https://www.mediafire.com/file/h5jihwrrwutxey0/VeinCapitator_v8_better_tree_chopping.mcpack/file",                            description: "" },
-                        { id: "mod18", name: "X-Ray",                url: "https://www.mediafire.com/file/y71loingv5n8ojs/X-Ray_v1.6.0_Stable.mcpack/file",                                             description: "" }
+                        { id: "mod1",  name: "AI Bots",             url: "https://www.mediafire.com/file/ckaq1ihgwso1stf/Advanced_Ai_Bots_%2528Load_Chunks%2529.mcaddon/file", description: "" },
+                        { id: "mod2",  name: "Creative Addon",       url: "https://www.mediafire.com/file/av210khednz6wz0/criativo_addon_by_ncmine_-MConverter.eu-.mcpack/file", description: "" },
+                        { id: "mod3",  name: "Effortless Building",  url: "https://www.mediafire.com/file/sev1zakxm7x7ab1/Effortless_Building_v3.1.mcaddon/file", description: "" },
+                        { id: "mod4",  name: "JEI BE Desktop",       url: "https://www.mediafire.com/file/7u8bnhibnn322dk/JEI_Recipe_Book_Layout_v1.2.1_%2528VDX_Desktop_UI%2529.mcpack/file", description: "" },
+                        { id: "mod5",  name: "JEI BE",               url: "https://www.mediafire.com/file/jhlihake7js8olo/JEI_Recipe_Book_Layout_v1.2.20.mcpack/file", description: "" },
+                        { id: "mod6",  name: "Mochilas",             url: "https://www.mediafire.com/file/jlri919ls7kbzoe/mochilas.mcaddon.zip/file", description: "" },
+                        { id: "mod7",  name: "Night Vision",         url: "https://www.mediafire.com/file/tew8qoi8frdjkdp/Night_Vision_Addon_1.3.mcpack/file", description: "" },
+                        { id: "mod8",  name: "Security Craft BP",    url: "https://www.mediafire.com/file/qp6tpkdopr2adlb/SecurityBeCraft_BP.mcpack/file", description: "" },
+                        { id: "mod9",  name: "Security Craft RP",    url: "https://www.mediafire.com/file/4vt6teog23eja36/SecurityCraft_RP.mcpack/file", description: "" },
+                        { id: "mod10", name: "Backpacks",            url: "https://www.mediafire.com/file/n15uyc19yeov5qs/sophisticangel_backpack_v1.0.0.mcaddon/file", description: "" },
+                        { id: "mod11", name: "Tumbas",               url: "https://www.mediafire.com/file/8my0o2n5ni02hvh/StoneTombs.mcaddon.zip/file", description: "" },
+                        { id: "mod12", name: "Luz Dinámica",         url: "https://www.mediafire.com/file/oldpwmsdu9bov2f/System_Dynamic_Lights_BH_V3.2.3.mcpack/file", description: "" },
+                        { id: "mod13", name: "Tradeos Infinitos",    url: "https://www.mediafire.com/file/8tf610nhedminho/tradeos_infinits_%2528all_versions%2529.mcpack/file", description: "" },
+                        { id: "mod14", name: "Hacks",                url: "https://www.mediafire.com/file/3bt8b97t0vmq6hu/Ultimate_Cheat_Menu_v1.1.7.mcpack/file", description: "" },
+                        { id: "mod15", name: "Waypoints BP",         url: "https://www.mediafire.com/file/xvq1hddnrpjqrl8/Vanilla_Waypoints_v1.9.2_%255BBehavior%255D_-_By_DARKLEXx.mcpack/file", description: "" },
+                        { id: "mod16", name: "Waypoints RP",         url: "https://www.mediafire.com/file/mzx11v2itdswjuv/Vanilla_Waypoints_v1.9.2_%255BResource%255D_-_By_DARKLEXx.mcpack/file", description: "" },
+                        { id: "mod17", name: "Treecapitator",        url: "https://www.mediafire.com/file/h5jihwrrwutxey0/VeinCapitator_v8_better_tree_chopping.mcpack/file", description: "" },
+                        { id: "mod18", name: "X-Ray",                url: "https://www.mediafire.com/file/y71loingv5n8ojs/X-Ray_v1.6.0_Stable.mcpack/file", description: "" }
                     ]
                 },
                 {
                     id: "mc-texturas", name: "Texturas de Minecraft",
                     links: [
-                        { id: "tex1", name: "Bedrock Customize 26.X",       url: "https://www.mediafire.com/file/en486rqkzxnc4e9/BedrockCustomize_26.X.mcpack/file",                description: "" },
+                        { id: "tex1", name: "Bedrock Customize 26.X",       url: "https://www.mediafire.com/file/en486rqkzxnc4e9/BedrockCustomize_26.X.mcpack/file", description: "" },
                         { id: "tex2", name: "Guardian Technical Resources", url: "https://www.mediafire.com/file/j063nyvmtekgync/GuardianTechnicalResources.v1.16.40.mcpack/file", description: "" },
-                        { id: "tex3", name: "Markers",                      url: "https://www.mediafire.com/file/cyjoy7yeeq9dc9g/markers-v2.3.1.mcpack/file",                      description: "" },
-                        { id: "tex4", name: "Saturated Bedrock",            url: "https://www.mediafire.com/file/i9u8pgon5g2wdm3/SaturatedBedrock-v3.6.mcpack/file",               description: "" }
+                        { id: "tex3", name: "Markers",                      url: "https://www.mediafire.com/file/cyjoy7yeeq9dc9g/markers-v2.3.1.mcpack/file", description: "" },
+                        { id: "tex4", name: "Saturated Bedrock",            url: "https://www.mediafire.com/file/i9u8pgon5g2wdm3/SaturatedBedrock-v3.6.mcpack/file", description: "" }
                     ]
                 }
             ]
@@ -277,16 +340,127 @@ const DATOS_PREDETERMINADOS = {
     ]
 };
 
+// ── Estado ───────────────────────────────────────────────────────────────
 let data = DATOS_PREDETERMINADOS;
 let activeCat = null;
 let activeSub = null;
+let view = "cat";          // "cat" | "fav" | "new" | "recent"
+let query = "";
 let isAdmin = false;
 let currentModalTarget = null;
 let cloudOk = true;
 let appStarted = false;
 
-function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+const NEW_DAYS = 14;
+const LS = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+let favs = new Set(LS.get("nv-favs", []));
+let recents = LS.get("nv-recent", []);   // [{ id, t }]
 
+// ── Utilidades de seguridad ──────────────────────────────────────────────
+// Todo texto que venga de la nube se escapa antes de meterlo en el HTML.
+function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+// Solo se permiten enlaces http(s); cualquier otra cosa (javascript:, data:...) se descarta.
+function safeUrl(u) {
+    try { const p = new URL(String(u ?? "").trim()); return (p.protocol === "https:" || p.protocol === "http:") ? p.href : null; }
+    catch { return null; }
+}
+// Nombres de ícono Tabler: solo letras, números y guiones.
+function safeIcon(i) { return /^ti-[a-z0-9-]+$/.test(i || "") ? i : "ti-folder"; }
+
+// ── Utilidades generales ─────────────────────────────────────────────────
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function plural(n, one, many) { return `${n} ${n === 1 ? one : many}`; }
+function normalize(s) { return String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } }
+function isNew(link) { return Number.isFinite(link.addedAt) && Date.now() - link.addedAt < NEW_DAYS * 864e5; }
+function cleanVersion(v) { return String(v ?? "").trim().replace(/^v(?=\d)/i, ""); }
+
+const FILE_TYPES = {
+    apk:        { label: "APK",        icon: "ti-brand-android" },
+    mcpack:     { label: "MCPACK",     icon: "ti-package" },
+    mcaddon:    { label: "MCADDON",    icon: "ti-puzzle" },
+    mcworld:    { label: "MCWORLD",    icon: "ti-world" },
+    mctemplate: { label: "MCTEMPLATE", icon: "ti-template" },
+    zip:        { label: "ZIP",        icon: "ti-file-zip" },
+    rar:        { label: "RAR",        icon: "ti-file-zip" },
+    "7z":       { label: "7Z",         icon: "ti-file-zip" },
+    pdf:        { label: "PDF",        icon: "ti-file-type-pdf" },
+    doc:        { label: "DOC",        icon: "ti-file-type-doc" },
+    docx:       { label: "DOCX",       icon: "ti-file-type-doc" },
+    xls:        { label: "XLS",        icon: "ti-file-spreadsheet" },
+    xlsx:       { label: "XLSX",       icon: "ti-file-spreadsheet" },
+    ppt:        { label: "PPT",        icon: "ti-presentation" },
+    pptx:       { label: "PPTX",       icon: "ti-presentation" },
+    jar:        { label: "JAR",        icon: "ti-coffee" },
+    exe:        { label: "EXE",        icon: "ti-app-window" }
+};
+// Detecta el tipo de archivo por la extensión que aparece en la URL (p. ej. ".../Mod.mcpack/file").
+function fileInfo(url) {
+    let s = String(url || "");
+    try { s = decodeURIComponent(s); } catch {}
+    const m = s.match(/\.(apk|mcpack|mcaddon|mcworld|mctemplate|zip|rar|7z|pdf|docx?|xlsx?|pptx?|jar|exe)(?=[\/?#]|$)/i);
+    if (m) return FILE_TYPES[m[1].toLowerCase()];
+    return { label: "ENLACE", icon: "ti-link" };
+}
+
+let toastTimer = null;
+function showToast(msg, isError = false, ms = 4000) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = isError ? "error" : "";
+    t.style.display = "block";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.display = "none"; }, ms);
+}
+
+function adminButton(cls, iconCls, label, handler, title = "") {
+    const b = document.createElement("button");
+    b.className = cls;
+    if (title) { b.title = title; b.setAttribute("aria-label", title); }
+    b.innerHTML = `<i class="ti ${iconCls}"></i>${label ? " " + esc(label) : ""}`;
+    b.onclick = (e) => { e.stopPropagation(); handler(); };
+    return b;
+}
+function iconButton(iconCls, title, handler, extraCls = "") {
+    const b = document.createElement("button");
+    b.className = "icon-btn " + extraCls;
+    b.title = title; b.setAttribute("aria-label", title);
+    b.innerHTML = `<i class="ti ${iconCls}"></i>`;
+    b.onclick = (e) => { e.stopPropagation(); handler(); };
+    return b;
+}
+
+// ── Consultas sobre los datos ────────────────────────────────────────────
+function allLinks() {
+    const out = [];
+    data.categories.forEach(cat => cat.subcategories.forEach(sub => sub.links.forEach(link => out.push({ link, cat, sub }))));
+    return out;
+}
+function visibleCats() { return isAdmin ? data.categories : data.categories.filter(c => c.subcategories.some(s => s.links.length > 0)); }
+function visibleSubs(cat) { return isAdmin ? cat.subcategories : cat.subcategories.filter(s => s.links.length > 0); }
+function favLinks() { return allLinks().filter(e => favs.has(e.link.id)); }
+function newLinks() { return allLinks().filter(e => isNew(e.link)).sort((a, b) => b.link.addedAt - a.link.addedAt); }
+function recentLinks() {
+    const map = new Map(allLinks().map(e => [e.link.id, e]));
+    return recents.map(r => map.get(r.id)).filter(Boolean);
+}
+
+function ensureSelection() {
+    const cats = visibleCats();
+    if (!cats.find(c => c.id === activeCat)) activeCat = cats[0]?.id || null;
+    const cat = cats.find(c => c.id === activeCat);
+    const subs = cat ? visibleSubs(cat) : [];
+    if (!subs.find(s => s.id === activeSub)) activeSub = subs[0]?.id || null;
+    if ((view === "fav" && !favLinks().length) || (view === "new" && !newLinks().length) || (view === "recent" && !recentLinks().length)) view = "cat";
+}
+
+// ── Carga y guardado ─────────────────────────────────────────────────────
 async function initApp() {
     if (appStarted) return;
     appStarted = true;
@@ -298,19 +472,16 @@ async function initApp() {
         const fbData = snap.exists() ? snap.data().vault : null;
         if (fbData && Array.isArray(fbData.categories)) {
             data = fbData;
-            try { localStorage.setItem("vault-data", JSON.stringify(fbData)); } catch {}
+            LS.set("vault-data", fbData);
         } else {
             data = DATOS_PREDETERMINADOS;
         }
-    } catch(e) {
+    } catch (e) {
         console.warn("Firebase error:", e);
         cloudOk = false;
-        try { const r = localStorage.getItem("vault-data"); if(r) data = JSON.parse(r); } catch {}
+        const cached = LS.get("vault-data", null);
+        if (cached && Array.isArray(cached.categories)) data = cached;
         showToast("No se pudo conectar con la nube. Estás viendo una copia guardada que puede estar desactualizada.", true, 8000);
-    }
-    if (data.categories?.length > 0) {
-        activeCat = data.categories[0].id;
-        activeSub = data.categories[0].subcategories?.[0]?.id || null;
     }
     document.getElementById("loadingScreen").style.display = "none";
     render();
@@ -318,7 +489,7 @@ async function initApp() {
 
 window.addEventListener("fb-ready", initApp, { once: true });
 window.addEventListener("fb-auth", (e) => { isAdmin = !!e.detail; if (appStarted) render(); });
-setTimeout(() => { if(document.getElementById("loadingScreen").style.display !== "none") initApp(); }, 8000);
+setTimeout(() => { if (!appStarted) initApp(); }, 8000);
 
 async function save(nd) {
     if (!isAdmin) { showToast("Inicia sesión como administrador para hacer cambios.", true); return; }
@@ -330,8 +501,8 @@ async function save(nd) {
     badge.style.display = "flex";
     try {
         await window._fbSet(nd);
-        try { localStorage.setItem("vault-data", JSON.stringify(nd)); } catch {}
-    } catch(e) {
+        LS.set("vault-data", nd);
+    } catch (e) {
         console.warn("Error guardando:", e);
         data = prev; // deshacer el cambio en pantalla
         if (e?.code === "permission-denied") {
@@ -346,39 +517,61 @@ async function save(nd) {
     render();
 }
 
-function render() { renderAdminUI(); renderCategories(); renderSubcategories(); renderLinks(); }
+// ── Render ───────────────────────────────────────────────────────────────
+function render() { ensureSelection(); renderAdminUI(); renderTabs(); renderSubcategories(); renderLinks(); }
 
 function renderAdminUI() {
     const banner = document.getElementById("adminBanner");
     const btnText = document.getElementById("adminBtnText");
     const btn = document.getElementById("adminBtn");
     const btnIcon = document.getElementById("adminIcon");
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = isAdmin ? "inline-flex" : "none");
     if (isAdmin) {
         banner.style.display = "flex"; btnText.innerText = "Cerrar sesión";
-        btn.style.background = "rgba(167,139,250,0.12)"; btn.style.borderColor = "rgba(167,139,250,0.4)";
-        btn.style.color = "var(--purple-light)"; btnIcon.className = "ti ti-lock-open";
+        btn.style.borderColor = "rgba(167,139,250,0.4)"; btn.style.color = "var(--purple-light)"; btnIcon.className = "ti ti-lock-open";
     } else {
         banner.style.display = "none"; btnText.innerText = "Entrar como admin";
-        btn.style.background = "rgba(255,255,255,0.04)"; btn.style.borderColor = "rgba(255,255,255,0.09)";
-        btn.style.color = "var(--muted)"; btnIcon.className = "ti ti-lock";
+        btn.style.borderColor = ""; btn.style.color = ""; btnIcon.className = "ti ti-lock";
     }
+    document.getElementById("themeIcon").className = "ti " + (document.documentElement.classList.contains("light") ? "ti-moon" : "ti-sun");
 }
 
-function renderCategories() {
+function makeTab(iconCls, label, active, onClick, count = null, extraCls = "") {
+    const btn = document.createElement("button");
+    btn.className = `cat-tab ${extraCls} ${active ? "active" : ""}`;
+    btn.innerHTML = `<i class="ti ${iconCls}" style="font-size:18px"></i> ${esc(label)}${count !== null ? ` <span class="tab-count">${count}</span>` : ""}`;
+    btn.onclick = onClick;
+    return btn;
+}
+
+function selectView(v) { view = v; clearSearch(false); render(); }
+
+function renderTabs() {
     const container = document.getElementById("categoriesContainer");
     container.innerHTML = "";
-    data.categories.forEach(cat => {
+    const searching = !!query;
+
+    const virtuals = [
+        { v: "fav",    icon: "ti-star",     label: "Favoritos",  n: favLinks().length },
+        { v: "new",    icon: "ti-sparkles", label: "Novedades",  n: newLinks().length },
+        { v: "recent", icon: "ti-clock",    label: "Recientes",  n: recentLinks().length }
+    ].filter(x => x.n > 0);
+    virtuals.forEach(x => container.appendChild(makeTab(x.icon, x.label, !searching && view === x.v, () => selectView(x.v), x.n, "virtual")));
+    if (virtuals.length) { const sep = document.createElement("div"); sep.className = "tabs-sep"; container.appendChild(sep); }
+
+    const cats = visibleCats();
+    cats.forEach((cat, i) => {
         const item = document.createElement("div"); item.className = "cat-item";
-        const btn = document.createElement("button");
-        btn.className = `cat-tab ${activeCat === cat.id ? 'active' : ''}`;
-        btn.innerHTML = `<i class="ti ${safeIcon(cat.icon)}" style="font-size:18px"></i> ${esc(cat.name)}`;
-        btn.onclick = () => { activeCat = cat.id; activeSub = cat.subcategories[0]?.id || null; render(); };
-        item.appendChild(btn);
+        item.appendChild(makeTab(safeIcon(cat.icon), cat.name, !searching && view === "cat" && activeCat === cat.id, () => {
+            activeCat = cat.id; activeSub = visibleSubs(cat)[0]?.id || null; selectView("cat");
+        }));
         if (isAdmin) {
             const eg = document.createElement("div"); eg.className = "admin-edit-group";
+            if (i > 0) eg.append(adminButton("btn-edit", "ti-chevron-left", "", () => moveCat(cat.id, -1), "Mover a la izquierda"));
+            if (i < cats.length - 1) eg.append(adminButton("btn-edit", "ti-chevron-right", "", () => moveCat(cat.id, 1), "Mover a la derecha"));
             eg.append(
-                adminButton("btn-edit", "ti-pencil", "", () => openCrudModal('editCategory', cat.id)),
-                adminButton("btn-danger", "ti-trash", "", () => delCategory(cat.id))
+                adminButton("btn-edit", "ti-pencil", "", () => openCrudModal("editCategory", cat.id), "Editar categoría"),
+                adminButton("btn-danger", "ti-trash", "", () => delCategory(cat.id), "Eliminar categoría")
             );
             item.appendChild(eg);
         }
@@ -387,27 +580,31 @@ function renderCategories() {
     if (isAdmin) {
         const addBtn = document.createElement("button"); addBtn.className = "btn-ghost"; addBtn.style.borderStyle = "dashed";
         addBtn.innerHTML = `<i class="ti ti-plus" style="font-size:14px"></i> Categoría`;
-        addBtn.onclick = () => openCrudModal('addCategory');
+        addBtn.onclick = () => openCrudModal("addCategory");
         container.appendChild(addBtn);
     }
 }
 
 function renderSubcategories() {
     const container = document.getElementById("subcategoriesContainer"); container.innerHTML = "";
+    if (query || view !== "cat") return;
     const curCat = data.categories.find(c => c.id === activeCat);
     if (!curCat) return;
-    curCat.subcategories.forEach(sub => {
+    const subs = visibleSubs(curCat);
+    subs.forEach((sub, i) => {
         const item = document.createElement("div"); item.className = "subcat-item";
         const btn = document.createElement("button");
-        btn.className = `sub-pill ${activeSub === sub.id ? 'active' : ''}`;
+        btn.className = `sub-pill ${activeSub === sub.id ? "active" : ""}`;
         btn.innerText = sub.name;
         btn.onclick = () => { activeSub = sub.id; render(); };
         item.appendChild(btn);
         if (isAdmin) {
             const eg = document.createElement("div"); eg.className = "admin-edit-group";
+            if (i > 0) eg.append(adminButton("btn-edit", "ti-chevron-left", "", () => moveSub(curCat.id, sub.id, -1), "Mover a la izquierda"));
+            if (i < subs.length - 1) eg.append(adminButton("btn-edit", "ti-chevron-right", "", () => moveSub(curCat.id, sub.id, 1), "Mover a la derecha"));
             eg.append(
-                adminButton("btn-edit", "ti-pencil", "", () => openCrudModal('editSubcat', curCat.id, sub.id)),
-                adminButton("btn-danger", "ti-trash", "", () => delSubcat(curCat.id, sub.id))
+                adminButton("btn-edit", "ti-pencil", "", () => openCrudModal("editSubcat", curCat.id, sub.id), "Editar subcarpeta"),
+                adminButton("btn-danger", "ti-trash", "", () => delSubcat(curCat.id, sub.id), "Eliminar subcarpeta")
             );
             item.appendChild(eg);
         }
@@ -415,89 +612,194 @@ function renderSubcategories() {
     });
     if (isAdmin) {
         const addBtn = document.createElement("button");
-        addBtn.style = "padding:6px 16px;border-radius:20px;border:1px dashed rgba(37,99,235,0.3);background:rgba(37,99,235,0.06);cursor:pointer;font-size:12px;color:rgba(147,197,253,0.6);display:inline-flex;align-items:center;gap:5px;";
+        addBtn.style = "padding:6px 16px;border-radius:20px;border:1px dashed rgba(37,99,235,0.3);background:rgba(37,99,235,0.06);cursor:pointer;font-size:12px;color:var(--blue-light);opacity:0.75;display:inline-flex;align-items:center;gap:5px;";
         addBtn.innerHTML = `<i class="ti ti-plus" style="font-size:12px"></i> Subcarpeta`;
-        addBtn.onclick = () => openCrudModal('addSubcat', curCat.id);
+        addBtn.onclick = () => openCrudModal("addSubcat", curCat.id);
         container.appendChild(addBtn);
     }
 }
 
-function renderLinks() {
-    const area = document.getElementById("linksArea"); area.innerHTML = "";
-    const curCat = data.categories.find(c => c.id === activeCat);
-    const curSub = curCat ? curCat.subcategories.find(s => s.id === activeSub) : null;
-    if (curSub) {
-        const headerDiv = document.createElement("div"); headerDiv.className = "links-header";
-        headerDiv.innerHTML = `<span class="links-count">${curSub.links.length} ${curSub.links.length === 1 ? 'archivo' : 'archivos'}</span>`;
-        if (isAdmin) {
-            const addBtn = document.createElement("button"); addBtn.className = "btn-primary";
-            addBtn.innerHTML = `<i class="ti ti-plus" style="font-size:14px"></i> Agregar enlace`;
-            addBtn.onclick = () => openCrudModal('addLink', curCat.id, curSub.id);
-            headerDiv.appendChild(addBtn);
-        }
-        area.appendChild(headerDiv);
-        if (curSub.links.length === 0) {
-            const empty = document.createElement("div"); empty.className = "empty-state";
-            empty.innerHTML = `<i class="ti ti-inbox" style="font-size:44px;display:block;margin-bottom:14px"></i><div style="font-size:14px;margin-bottom:22px">Esta carpeta está vacía</div>`;
-            if (isAdmin) {
-                const fb = document.createElement("button"); fb.className = "btn-primary"; fb.style.margin = "0 auto";
-                fb.innerHTML = `<i class="ti ti-plus" style="font-size:14px"></i> Agregar primer enlace`;
-                fb.onclick = () => openCrudModal('addLink', curCat.id, curSub.id);
-                empty.appendChild(fb);
-            }
-            area.appendChild(empty);
-        } else {
-            const grid = document.createElement("div"); grid.className = "links-grid";
-            curSub.links.forEach(link => {
-                const card = document.createElement("div"); card.className = "link-card";
-                card.innerHTML = `
-                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-                        <div class="link-title">${esc(link.name)}</div>
-                        <i class="ti ti-file" style="font-size:18px;color:var(--muted);flex-shrink:0;margin-top:1px"></i>
-                    </div>
-                    ${link.description ? `<p class="link-desc">${esc(link.description)}</p>` : ''}
-                `;
-                const actions = document.createElement("div"); actions.className = "link-actions";
-                const href = safeUrl(link.url);
-                actions.innerHTML = href
-                    ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="btn-open"><i class="ti ti-external-link" style="font-size:13px"></i> Abrir</a>`
-                    : `<span class="btn-open" style="opacity:0.5;cursor:not-allowed" title="Enlace no válido"><i class="ti ti-link-off" style="font-size:13px"></i> Enlace no válido</span>`;
-                if (isAdmin) {
-                    const ab = document.createElement("div"); ab.style = "display:flex;gap:6px";
-                    ab.append(
-                        adminButton("btn-edit", "ti-pencil", "Editar", () => openCrudModal('editLink', curCat.id, curSub.id, link.id)),
-                        adminButton("btn-danger", "ti-trash", "", () => delLink(curCat.id, curSub.id, link.id))
-                    );
-                    actions.appendChild(ab);
-                }
-                card.appendChild(actions);
-                grid.appendChild(card);
-            });
-            if (isAdmin) {
-                const ph = document.createElement("div"); ph.className = "add-card-placeholder"; ph.style.display = "flex";
-                ph.innerHTML = `<i class="ti ti-plus" style="font-size:28px"></i>Agregar enlace`;
-                ph.onclick = () => openCrudModal('addLink', curCat.id, curSub.id);
-                grid.appendChild(ph);
-            }
-            area.appendChild(grid);
-        }
-    } else if (curCat) {
-        const empty = document.createElement("div"); empty.className = "empty-state";
-        empty.innerHTML = `<i class="ti ti-folder-open" style="font-size:44px;display:block;margin-bottom:14px"></i><div style="font-size:14px;margin-bottom:22px">Esta categoría no tiene subcarpetas</div>`;
-        if (isAdmin) {
-            const ms = document.createElement("button"); ms.className = "btn-primary"; ms.style.margin = "0 auto";
-            ms.innerHTML = `<i class="ti ti-plus" style="font-size:14px"></i> Crear subcarpeta`;
-            ms.onclick = () => openCrudModal('addSubcat', curCat.id);
-            empty.appendChild(ms);
-        }
-        area.appendChild(empty);
-    } else {
-        const empty = document.createElement("div"); empty.className = "empty-state";
-        empty.innerHTML = `<i class="ti ti-galaxy" style="font-size:44px;display:block;margin-bottom:14px"></i><div style="font-size:14px;margin-bottom:22px">No hay categorías todavía</div>`;
-        area.appendChild(empty);
+function emptyState(icon, text, action = null) {
+    const empty = document.createElement("div"); empty.className = "empty-state";
+    empty.innerHTML = `<i class="ti ${icon}" style="font-size:44px;display:block;margin-bottom:14px"></i><div style="font-size:14px;margin-bottom:22px">${esc(text)}</div>`;
+    if (action) {
+        const b = document.createElement("button"); b.className = "btn-primary"; b.style.margin = "0 auto";
+        b.innerHTML = `<i class="ti ti-plus" style="font-size:14px"></i> ${esc(action.label)}`;
+        b.onclick = action.onClick;
+        empty.appendChild(b);
     }
+    return empty;
 }
 
+function renderLinks() {
+    const area = document.getElementById("linksArea"); area.innerHTML = "";
+    let entries, title, showCrumb = true, ctx = null, emptyMsg = "";
+
+    if (query) {
+        const q = normalize(query);
+        entries = allLinks().filter(({ link, cat, sub }) =>
+            normalize([link.name, link.description, link.version, (link.tags || []).join(" "), fileInfo(link.url).label, sub.name, cat.name].join(" ")).includes(q));
+        title = `${plural(entries.length, "resultado", "resultados")} para “${query}”`;
+        emptyMsg = "No se encontró nada con esa búsqueda";
+    } else if (view === "fav") {
+        entries = favLinks(); title = plural(entries.length, "favorito", "favoritos");
+    } else if (view === "new") {
+        entries = newLinks(); title = `${plural(entries.length, "novedad", "novedades")} de los últimos ${NEW_DAYS} días`;
+    } else if (view === "recent") {
+        entries = recentLinks(); title = `${plural(entries.length, "abierto", "abiertos")} recientemente`;
+    } else {
+        const cat = data.categories.find(c => c.id === activeCat);
+        const sub = cat?.subcategories.find(s => s.id === activeSub);
+        if (!cat) {
+            area.appendChild(emptyState("ti-galaxy", "No hay contenido todavía",
+                isAdmin ? { label: "Crear categoría", onClick: () => openCrudModal("addCategory") } : null));
+            return;
+        }
+        if (!sub) {
+            area.appendChild(emptyState("ti-folder-open", "Esta categoría no tiene subcarpetas",
+                isAdmin ? { label: "Crear subcarpeta", onClick: () => openCrudModal("addSubcat", cat.id) } : null));
+            return;
+        }
+        entries = sub.links.map(link => ({ link, cat, sub }));
+        showCrumb = false; ctx = { cat, sub };
+        title = plural(entries.length, "archivo", "archivos");
+    }
+
+    const headerDiv = document.createElement("div"); headerDiv.className = "links-header";
+    headerDiv.innerHTML = `<span class="links-count">${esc(title)}</span>`;
+    if (ctx && isAdmin) {
+        const addBtn = document.createElement("button"); addBtn.className = "btn-primary";
+        addBtn.innerHTML = `<i class="ti ti-plus" style="font-size:14px"></i> Agregar enlace`;
+        addBtn.onclick = () => openCrudModal("addLink", ctx.cat.id, ctx.sub.id);
+        headerDiv.appendChild(addBtn);
+    }
+    area.appendChild(headerDiv);
+
+    if (!entries.length) {
+        area.appendChild(emptyState(query ? "ti-search-off" : "ti-inbox", emptyMsg || "Esta carpeta está vacía",
+            ctx && isAdmin ? { label: "Agregar primer enlace", onClick: () => openCrudModal("addLink", ctx.cat.id, ctx.sub.id) } : null));
+        return;
+    }
+    const grid = document.createElement("div"); grid.className = "links-grid";
+    entries.forEach((e, i) => grid.appendChild(buildCard(e, showCrumb, ctx, i, entries.length)));
+    if (ctx && isAdmin) {
+        const ph = document.createElement("div"); ph.className = "add-card-placeholder";
+        ph.innerHTML = `<i class="ti ti-plus" style="font-size:28px"></i>Agregar enlace`;
+        ph.onclick = () => openCrudModal("addLink", ctx.cat.id, ctx.sub.id);
+        grid.appendChild(ph);
+    }
+    area.appendChild(grid);
+}
+
+function buildCard({ link, cat, sub }, showCrumb, ctx, idx, total) {
+    const info = fileInfo(link.url);
+    const href = safeUrl(link.url);
+    const host = href ? hostOf(href) : "";
+    const tags = Array.isArray(link.tags) ? link.tags : [];
+    const version = cleanVersion(link.version);
+    const fav = favs.has(link.id);
+
+    const card = document.createElement("div"); card.className = "link-card";
+    card.innerHTML = `
+        <div class="card-top">
+            <div class="type-badge"><i class="ti ${info.icon}"></i></div>
+            <div class="card-head">
+                <div class="link-title">${esc(link.name)}${isNew(link) ? '<span class="badge-new">Nuevo</span>' : ""}</div>
+                ${showCrumb ? `<div class="crumb">${esc(cat.name)} › ${esc(sub.name)}</div>` : ""}
+            </div>
+        </div>
+        <div class="chips">
+            <span class="chip chip-type">${esc(info.label)}</span>
+            ${version ? `<span class="chip">v${esc(version)}</span>` : ""}
+            ${tags.map(t => `<span class="chip chip-tag">#${esc(t)}</span>`).join("")}
+            ${host ? `<span class="chip">${esc(host)}</span>` : ""}
+        </div>
+        ${link.description ? `<p class="link-desc">${esc(link.description)}</p>` : ""}
+    `;
+    card.querySelector(".card-top").appendChild(
+        iconButton(fav ? "ti-star-filled" : "ti-star", fav ? "Quitar de favoritos" : "Añadir a favoritos", () => toggleFav(link.id), "star" + (fav ? " on" : ""))
+    );
+
+    const actions = document.createElement("div"); actions.className = "link-actions";
+    const left = document.createElement("div"); left.className = "actions-left";
+    if (href) {
+        const a = document.createElement("a");
+        a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer"; a.className = "btn-open";
+        a.innerHTML = `<i class="ti ti-external-link" style="font-size:13px"></i> Abrir`;
+        a.addEventListener("click", () => addRecent(link.id));
+        left.append(a, iconButton("ti-copy", "Copiar enlace", () => copyLink(href)), iconButton("ti-qrcode", "Ver código QR", () => openQr(link.name, href)));
+    } else {
+        left.innerHTML = `<span class="btn-open" style="opacity:0.5;cursor:not-allowed" title="Enlace no válido"><i class="ti ti-link-off" style="font-size:13px"></i> Enlace no válido</span>`;
+    }
+    actions.appendChild(left);
+    if (isAdmin) {
+        const ab = document.createElement("div"); ab.className = "actions-admin";
+        if (ctx && idx > 0) ab.append(adminButton("btn-edit", "ti-chevron-left", "", () => moveLink(ctx, idx, -1), "Mover antes"));
+        if (ctx && idx < total - 1) ab.append(adminButton("btn-edit", "ti-chevron-right", "", () => moveLink(ctx, idx, 1), "Mover después"));
+        ab.append(
+            adminButton("btn-edit", "ti-pencil", "", () => openCrudModal("editLink", cat.id, sub.id, link.id), "Editar enlace"),
+            adminButton("btn-danger", "ti-trash", "", () => delLink(cat.id, sub.id, link.id), "Eliminar enlace")
+        );
+        actions.appendChild(ab);
+    }
+    card.appendChild(actions);
+    return card;
+}
+
+// ── Acciones del visitante ───────────────────────────────────────────────
+function toggleFav(id) {
+    if (favs.has(id)) { favs.delete(id); showToast("Quitado de favoritos", false, 1800); }
+    else { favs.add(id); showToast("Añadido a favoritos ★", false, 1800); }
+    LS.set("nv-favs", [...favs]);
+    render();
+}
+function addRecent(id) {
+    recents = [{ id, t: Date.now() }, ...recents.filter(r => r.id !== id)].slice(0, 12);
+    LS.set("nv-recent", recents);
+    setTimeout(render, 0);
+}
+function copyLink(href) {
+    navigator.clipboard.writeText(href)
+        .then(() => showToast("Enlace copiado", false, 1800))
+        .catch(() => showToast("No se pudo copiar el enlace", true));
+}
+function openQr(name, href) {
+    if (typeof qrcode !== "function") { showToast("El generador de QR no cargó. Revisa tu conexión.", true); return; }
+    const qr = qrcode(0, "M");
+    qr.addData(href);
+    qr.make();
+    document.getElementById("qrBox").innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+    document.getElementById("qrTitle").textContent = name;
+    document.getElementById("qrUrl").textContent = href;
+    document.getElementById("qrModal").style.display = "flex";
+}
+function toggleTheme() {
+    const light = document.documentElement.classList.toggle("light");
+    try { localStorage.setItem("nv-theme", light ? "light" : "dark"); } catch {}
+    document.querySelector('meta[name="theme-color"]').content = light ? "#F3F4FA" : "#06060F";
+    renderAdminUI();
+}
+
+// ── Búsqueda ─────────────────────────────────────────────────────────────
+const searchInput = document.getElementById("searchInput");
+function updateSearchChrome() {
+    document.getElementById("searchClear").style.display = query ? "block" : "none";
+    document.getElementById("searchKbd").style.visibility = query ? "hidden" : "visible";
+}
+function clearSearch(doRender = true) {
+    query = ""; searchInput.value = ""; updateSearchChrome();
+    if (doRender) render();
+}
+searchInput.addEventListener("input", () => { query = searchInput.value.trim(); updateSearchChrome(); render(); });
+searchInput.addEventListener("keydown", (e) => { if (e.key === "Escape") { clearSearch(); searchInput.blur(); } });
+document.getElementById("searchClear").onclick = () => { clearSearch(); searchInput.focus(); };
+document.addEventListener("keydown", (e) => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+    if (e.key === "/" && !typing) { e.preventDefault(); searchInput.focus(); }
+    if (e.key === "Escape") ["crudModal", "exportModal", "qrModal"].forEach(closeModal);
+});
+
+// ── Administración ───────────────────────────────────────────────────────
 async function toggleAdminMode() {
     if (isAdmin) { await logoutAdmin(); return; }
     if (!window._fbSignIn) { showToast("La nube no está disponible ahora mismo. Recarga la página.", true); return; }
@@ -513,6 +815,7 @@ async function logoutAdmin() {
     try { await window._fbSignOut?.(); } catch {}
     isAdmin = false; render();
 }
+
 function openExportModal() {
     document.getElementById("exportJsonBox").innerText = JSON.stringify(data, null, 2);
     document.getElementById("exportModal").style.display = "flex";
@@ -521,81 +824,164 @@ function doCopyConfig() {
     navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
         const btn = document.getElementById("copyBtn");
         btn.innerHTML = `<i class="ti ti-check"></i> ¡Copiado!`;
-        setTimeout(() => { btn.innerHTML = `<i class="ti ti-copy"></i> Copiar todo`; }, 2000);
+        setTimeout(() => { btn.innerHTML = `<i class="ti ti-copy" style="font-size:14px"></i> Copiar`; }, 2000);
     });
 }
-function closeModal(id) {
-    document.getElementById(id).style.display = "none";
+function downloadBackup() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `nexvault-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
+
+// Limpia y valida un JSON importado para que solo entren campos conocidos y URLs http(s).
+function sanitizeData(o) {
+    if (!o || !Array.isArray(o.categories)) throw new Error("El archivo no tiene el formato de NexVault.");
+    return {
+        _version: 2,
+        categories: o.categories.map(c => ({
+            id: String(c?.id || genId()),
+            name: String(c?.name || "Sin nombre"),
+            icon: safeIcon(c?.icon),
+            subcategories: (Array.isArray(c?.subcategories) ? c.subcategories : []).map(s => ({
+                id: String(s?.id || genId()),
+                name: String(s?.name || "Sin nombre"),
+                links: (Array.isArray(s?.links) ? s.links : []).filter(l => safeUrl(l?.url)).map(l => {
+                    const out = { id: String(l.id || genId()), name: String(l.name || "Sin nombre"), url: safeUrl(l.url), description: String(l.description || "") };
+                    if (l.version) out.version = String(l.version);
+                    if (Array.isArray(l.tags) && l.tags.length) out.tags = l.tags.map(String).slice(0, 8);
+                    if (Number.isFinite(l.addedAt)) out.addedAt = l.addedAt;
+                    return out;
+                })
+            }))
+        }))
+    };
+}
+document.getElementById("importFile").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+        const clean = sanitizeData(JSON.parse(await file.text()));
+        const n = clean.categories.reduce((a, c) => a + c.subcategories.reduce((b, s) => b + s.links.length, 0), 0);
+        if (!confirm(`Se importarán ${clean.categories.length} categorías y ${n} enlaces.\n\nEsto REEMPLAZARÁ todos los datos actuales. ¿Continuar?`)) return;
+        await save(clean);
+        showToast("Datos importados", false, 2500);
+    } catch (err) {
+        showToast("No se pudo importar: " + (err?.message || "archivo no válido"), true);
+    }
+});
+
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
 const modalTitles = { addCategory:"Nueva categoría", editCategory:"Editar categoría", addSubcat:"Nueva subcarpeta", editSubcat:"Editar subcarpeta", addLink:"Nuevo enlace", editLink:"Editar enlace" };
 
-function openCrudModal(type, catId=null, subId=null, linkId=null) {
+function field(id, label, value, placeholder, hint = "") {
+    return `<div class="form-group"><label class="label-style" for="${id}">${label}</label><input id="${id}" class="input-style" placeholder="${esc(placeholder)}" value="${esc(value)}">${hint ? `<p class="hint">${hint}</p>` : ""}</div>`;
+}
+
+function openCrudModal(type, catId = null, subId = null, linkId = null) {
     currentModalTarget = { type, catId, subId, linkId };
     document.getElementById("crudModalTitle").innerText = modalTitles[type];
     const inp = document.getElementById("crudInputs"); inp.innerHTML = "";
-    let initName="", initIcon="", initUrl="", initDesc="";
-    if (type==="editCategory") { const c=data.categories.find(x=>x.id===catId); initName=c?.name||""; initIcon=c?.icon||""; }
-    else if (type==="editSubcat") { const c=data.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); initName=s?.name||""; }
-    else if (type==="editLink") { const c=data.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); const l=s?.links.find(x=>x.id===linkId); initName=l?.name||""; initUrl=l?.url||""; initDesc=l?.description||""; }
-    if (type==="addCategory"||type==="editCategory") {
-        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre</label><input id="formName" class="input-style" placeholder="Ej: Música, Fotos..." value="${esc(initName)}"></div><div class="form-group"><label class="label-style">Ícono Tabler</label><input id="formIcon" class="input-style" placeholder="ti-device-gamepad-2" value="${esc(initIcon)}"><p style="font-size:11px;color:var(--muted);margin-top:6px">Ej: ti-school · ti-briefcase · ti-music · ti-code</p></div>`;
-    } else if (type==="addSubcat"||type==="editSubcat") {
-        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre de la subcarpeta</label><input id="formName" class="input-style" placeholder="Ej: Versiones, Apuntes..." value="${esc(initName)}"></div>`;
-    } else if (type==="addLink"||type==="editLink") {
-        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre</label><input id="formName" class="input-style" placeholder="Ej: Minecraft 1.20.4" value="${esc(initName)}"></div><div class="form-group"><label class="label-style">URL / Enlace</label><input id="formUrl" class="input-style" placeholder="https://..." value="${esc(initUrl)}"></div><div class="form-group"><label class="label-style">Descripción (opcional)</label><input id="formDesc" class="input-style" placeholder="Breve descripción..." value="${esc(initDesc)}"></div>`;
+    const c = data.categories.find(x => x.id === catId);
+    const s = c?.subcategories.find(x => x.id === subId);
+    const l = s?.links.find(x => x.id === linkId);
+    if (type === "addCategory" || type === "editCategory") {
+        inp.innerHTML = field("formName", "Nombre", type === "editCategory" ? c?.name : "", "Ej: Música, Fotos...")
+                      + field("formIcon", "Ícono Tabler", type === "editCategory" ? c?.icon : "", "ti-device-gamepad-2", "Ej: ti-school · ti-briefcase · ti-music · ti-code");
+    } else if (type === "addSubcat" || type === "editSubcat") {
+        inp.innerHTML = field("formName", "Nombre de la subcarpeta", type === "editSubcat" ? s?.name : "", "Ej: Versiones, Apuntes...");
+    } else {
+        const e = type === "editLink" ? l : null;
+        inp.innerHTML = field("formName", "Nombre", e?.name, "Ej: Minecraft 26.30")
+                      + field("formUrl", "URL / Enlace", e?.url, "https://...", "El tipo de archivo (APK, MCPACK…) se detecta solo a partir de la URL.")
+                      + field("formVersion", "Versión (opcional)", e?.version, "Ej: 1.21 · 26.30")
+                      + field("formTags", "Etiquetas (opcional)", (e?.tags || []).join(", "), "Ej: bp, rp, experimental", "Sepáralas con comas.")
+                      + field("formDesc", "Descripción (opcional)", e?.description, "Breve descripción...");
     }
+    inp.querySelectorAll("input").forEach(i => i.addEventListener("keydown", (ev) => { if (ev.key === "Enter") submitCrudModal(); }));
     document.getElementById("crudModal").style.display = "flex";
-    setTimeout(() => { const f=document.getElementById("formName"); if(f) f.focus(); }, 100);
+    setTimeout(() => document.getElementById("formName")?.focus(), 100);
 }
 
 function submitCrudModal() {
     if (!currentModalTarget) return;
     const { type, catId, subId, linkId } = currentModalTarget;
-    const nd = JSON.parse(JSON.stringify(data));
-    const nameVal = (document.getElementById("formName")?.value || "").trim();
-    const iconRaw = (document.getElementById("formIcon")?.value || "").trim();
-    const urlRaw  = (document.getElementById("formUrl")?.value  || "").trim();
-    const descVal = (document.getElementById("formDesc")?.value || "").trim();
-    if (iconRaw && !/^ti-[a-z0-9-]+$/.test(iconRaw)) { showToast("El ícono debe tener el formato ti-nombre (ej: ti-music).", true); return; }
-    const iconVal = iconRaw;
+    const nd = clone(data);
+    const val = (id) => (document.getElementById(id)?.value || "").trim();
+    const nameVal = val("formName"), iconVal = val("formIcon"), urlRaw = val("formUrl");
+    const versionVal = cleanVersion(val("formVersion")), descVal = val("formDesc");
+    const tagsVal = val("formTags").split(",").map(t => t.trim().replace(/^#/, "")).filter(Boolean).slice(0, 8);
+
+    if (iconVal && !/^ti-[a-z0-9-]+$/.test(iconVal)) { showToast("El ícono debe tener el formato ti-nombre (ej: ti-music).", true); return; }
+    if ((type === "addCategory" || type === "addSubcat" || type === "addLink") && !nameVal) { showToast("Escribe un nombre.", true); return; }
     let urlVal = "";
-    if (type === "addLink" || (type === "editLink" && urlRaw)) {
+    if (type === "addLink" || type === "editLink") {
         urlVal = safeUrl(urlRaw) || "";
         if (!urlVal) { showToast("La URL debe empezar por https:// o http://", true); return; }
     }
-    switch(type) {
-        case "addCategory": if(!nameVal) return; nd.categories.push({id:genId(),name:nameVal,icon:iconVal||"ti-folder",subcategories:[]}); break;
-        case "editCategory": { const c=nd.categories.find(x=>x.id===catId); if(c){c.name=nameVal||c.name;c.icon=iconVal||c.icon;} break; }
-        case "addSubcat": { if(!nameVal) return; const c=nd.categories.find(x=>x.id===catId); const ns={id:genId(),name:nameVal,links:[]}; if(c){c.subcategories.push(ns);activeSub=ns.id;} break; }
-        case "editSubcat": { const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); if(s) s.name=nameVal||s.name; break; }
-        case "addLink": { if(!nameVal||!urlVal) return; const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); if(s) s.links.push({id:genId(),name:nameVal,url:urlVal,description:descVal}); break; }
-        case "editLink": { const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); const l=s?.links.find(x=>x.id===linkId); if(l){l.name=nameVal||l.name;l.url=urlVal||l.url;l.description=descVal;} break; }
+
+    const c = nd.categories.find(x => x.id === catId);
+    const s = c?.subcategories.find(x => x.id === subId);
+    switch (type) {
+        case "addCategory": nd.categories.push({ id: genId(), name: nameVal, icon: iconVal || "ti-folder", subcategories: [] }); break;
+        case "editCategory": if (c) { c.name = nameVal || c.name; c.icon = iconVal || c.icon; } break;
+        case "addSubcat": if (c) { const ns = { id: genId(), name: nameVal, links: [] }; c.subcategories.push(ns); activeCat = c.id; activeSub = ns.id; } break;
+        case "editSubcat": if (s) s.name = nameVal || s.name; break;
+        case "addLink": if (s) {
+            const nl = { id: genId(), name: nameVal, url: urlVal, description: descVal, addedAt: Date.now() };
+            if (versionVal) nl.version = versionVal;
+            if (tagsVal.length) nl.tags = tagsVal;
+            s.links.push(nl);
+        } break;
+        case "editLink": {
+            const l = s?.links.find(x => x.id === linkId);
+            if (l) {
+                l.name = nameVal || l.name; l.url = urlVal; l.description = descVal;
+                if (versionVal) l.version = versionVal; else delete l.version;
+                if (tagsVal.length) l.tags = tagsVal; else delete l.tags;
+            }
+            break;
+        }
     }
-    save(nd);
     closeModal("crudModal");
+    save(nd);
+}
+
+function moveIn(arr, i, d) { const j = i + d; if (i < 0 || j < 0 || j >= arr.length) return false; [arr[i], arr[j]] = [arr[j], arr[i]]; return true; }
+function moveCat(catId, d) { const nd = clone(data); if (moveIn(nd.categories, nd.categories.findIndex(c => c.id === catId), d)) save(nd); }
+function moveSub(catId, subId, d) {
+    const nd = clone(data); const c = nd.categories.find(x => x.id === catId);
+    if (c && moveIn(c.subcategories, c.subcategories.findIndex(s => s.id === subId), d)) save(nd);
+}
+function moveLink(ctx, idx, d) {
+    const nd = clone(data); const s = nd.categories.find(x => x.id === ctx.cat.id)?.subcategories.find(x => x.id === ctx.sub.id);
+    if (s && moveIn(s.links, idx, d)) save(nd);
 }
 
 function delCategory(catId) {
     if (!confirm("¿Eliminar esta categoría y todo su contenido?")) return;
-    const nd={...data,categories:data.categories.filter(c=>c.id!==catId)};
-    if(activeCat===catId){activeCat=nd.categories[0]?.id||null;activeSub=nd.categories[0]?.subcategories[0]?.id||null;}
+    save({ ...data, categories: data.categories.filter(c => c.id !== catId) });
+}
+function delSubcat(catId, subId) {
+    if (!confirm("¿Eliminar esta subcarpeta y sus enlaces?")) return;
+    const nd = clone(data); const c = nd.categories.find(x => x.id === catId);
+    if (c) c.subcategories = c.subcategories.filter(s => s.id !== subId);
     save(nd);
 }
-function delSubcat(catId,subId) {
-    if (!confirm("¿Eliminar esta subcarpeta?")) return;
-    const nd=JSON.parse(JSON.stringify(data));
-    const c=nd.categories.find(x=>x.id===catId);
-    if(c){c.subcategories=c.subcategories.filter(s=>s.id!==subId);if(activeSub===subId)activeSub=c.subcategories[0]?.id||null;}
-    save(nd);
-}
-function delLink(catId,subId,linkId) {
+function delLink(catId, subId, linkId) {
     if (!confirm("¿Eliminar este enlace?")) return;
-    const nd=JSON.parse(JSON.stringify(data));
-    const c=nd.categories.find(x=>x.id===catId);
-    const s=c?.subcategories.find(x=>x.id===subId);
-    if(s) s.links=s.links.filter(l=>l.id!==linkId);
+    const nd = clone(data); const s = nd.categories.find(x => x.id === catId)?.subcategories.find(x => x.id === subId);
+    if (s) s.links = s.links.filter(l => l.id !== linkId);
     save(nd);
+}
+
+// ── App instalable / sin conexión ────────────────────────────────────────
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(e => console.warn("SW:", e)));
 }
 </script>
 </body>

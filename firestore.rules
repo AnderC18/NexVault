@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Reglas de Firestore para NexVault.
+// Pégalas en: Firebase Console → Firestore Database → Reglas → Publicar.
+// Cambia TU_CORREO@gmail.com por el correo de la cuenta de Google con la que vas a administrar.
+// (No hace falta subir tu correo real a GitHub: basta con ponerlo en la consola de Firebase.)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'TU_CORREO@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    // Cualquiera puede ver los enlaces; solo el administrador puede cambiarlos.
+    match /nexvault/data {
+      allow read: if true;
+      allow write: if esAdmin()
+        && request.resource.data.keys().hasOnly(['vault'])
+        && request.resource.data.vault.categories is list;
+    }
+
+    // Todo lo demás queda cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
