@@ -10,6 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
         const firebaseConfig = {
             apiKey: "AIzaSyAhLOh8OfASKV8C0vxVEPm12eYLkxDCwM4",
             authDomain: "nexvault-a1328.firebaseapp.com",
@@ -21,8 +22,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const docRef = doc(db, "nexvault", "data");
+        const auth = getAuth(app);
         window._fbGet = () => getDoc(docRef);
         window._fbSet = (data) => setDoc(docRef, { vault: data });
+        // El permiso real para escribir lo deciden las reglas de Firestore (ver firestore.rules),
+        // no este código: aunque alguien active el modo admin desde la consola, la nube rechazará sus cambios.
+        window._fbSignIn = () => signInWithPopup(auth, new GoogleAuthProvider());
+        window._fbSignOut = () => signOut(auth);
+        onAuthStateChanged(auth, (user) => window.dispatchEvent(new CustomEvent("fb-auth", { detail: user })));
         window.dispatchEvent(new Event("fb-ready"));
     </script>
 
@@ -58,6 +65,7 @@
         .cat-item,.subcat-item{display:flex;align-items:center;gap:6px}
         .admin-edit-group{display:none;gap:4px}
         .cat-item:hover .admin-edit-group,.subcat-item:hover .admin-edit-group{display:flex}
+        @media (hover:none){.admin-edit-group{display:flex}}
         .cat-tab{display:flex;align-items:center;gap:9px;padding:10px 20px;border-radius:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all 0.18s}
         .cat-tab.active{border-color:rgba(167,139,250,0.45);background:rgba(124,58,237,0.18);color:var(--white);box-shadow:0 0 24px rgba(124,58,237,0.2)}
         .cat-tab:hover:not(.active){background:rgba(255,255,255,0.06);border-color:rgba(167,139,250,0.2);color:var(--white)}
@@ -90,6 +98,8 @@
         .input-style:focus{border-color:rgba(167,139,250,0.5)}
         .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
         .export-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:monospace;font-size:11px;color:rgba(238,240,255,0.65);max-height:280px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:18px;text-align:left}
+        #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10000;max-width:90vw;padding:12px 18px;border-radius:10px;font-size:13px;line-height:1.5;display:none;backdrop-filter:blur(10px);background:rgba(124,58,237,0.2);border:1px solid rgba(167,139,250,0.35);color:var(--white)}
+        #toast.error{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
         ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(167,139,250,0.3);border-radius:4px}
     </style>
 </head>
@@ -135,7 +145,7 @@
 
     <div class="admin-banner" id="adminBanner">
         <span><i class="ti ti-sparkles" style="font-size:15px;margin-right:7px"></i>Modo administrador — edita, agrega y elimina lo que quieras</span>
-        <button class="btn-ghost" style="padding:4px 12px;font-size:12px" onclick="logoutAdmin()">Salir</button>
+        <button class="btn-ghost" style="padding:4px 12px;font-size:12px" onclick="logoutAdmin()">Cerrar sesión</button>
     </div>
 
     <div class="tabs-container" id="categoriesContainer"></div>
@@ -143,21 +153,7 @@
     <div id="linksArea"></div>
 </div>
 
-<!-- Modal Login -->
-<div class="modal-overlay" id="loginModal" onclick="closeModal('loginModal')">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="modal-title"><i class="ti ti-lock" style="margin-right:8px"></i>Acceso de administrador</div>
-        <div class="form-group">
-            <label class="label-style">Contraseña</label>
-            <input type="password" id="pwInput" class="input-style" placeholder="Ingresa tu contraseña" onkeydown="if(event.key==='Enter') handleLogin()">
-            <p id="pwError" style="color:var(--danger);font-size:12px;margin-top:7px;display:none"></p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-ghost" onclick="closeModal('loginModal')">Cancelar</button>
-            <button class="btn-primary" onclick="handleLogin()">Entrar</button>
-        </div>
-    </div>
-</div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <!-- Modal CRUD -->
 <div class="modal-overlay" id="crudModal" onclick="closeModal('crudModal')">
@@ -185,8 +181,36 @@
 </div>
 
 <script>
-const ADMIN_PASSWORD = "Kendall2026$";
-const DATA_VERSION = 2;
+// ── Utilidades de seguridad ──────────────────────────────────────────────
+// Todo texto que venga de la nube se escapa antes de meterlo en el HTML.
+function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+// Solo se permiten enlaces http(s); cualquier otra cosa (javascript:, data:...) se descarta.
+function safeUrl(u) {
+    try { const p = new URL(String(u ?? "").trim()); return (p.protocol === "https:" || p.protocol === "http:") ? p.href : null; }
+    catch { return null; }
+}
+// Nombres de ícono Tabler: solo letras, números y guiones.
+function safeIcon(i) { return /^ti-[a-z0-9-]+$/.test(i || "") ? i : "ti-folder"; }
+
+let toastTimer = null;
+function showToast(msg, isError = false, ms = 4500) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = isError ? "error" : "";
+    t.style.display = "block";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.display = "none"; }, ms);
+}
+
+function adminButton(cls, iconCls, label, handler) {
+    const b = document.createElement("button");
+    b.className = cls;
+    b.innerHTML = `<i class="ti ${iconCls}"></i>${label ? " " + esc(label) : ""}`;
+    b.onclick = (e) => { e.stopPropagation(); handler(); };
+    return b;
+}
 
 const DATOS_PREDETERMINADOS = {
     _version: 2,
@@ -258,28 +282,31 @@ let activeCat = null;
 let activeSub = null;
 let isAdmin = false;
 let currentModalTarget = null;
+let cloudOk = true;
+let appStarted = false;
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
 
 async function initApp() {
+    if (appStarted) return;
+    appStarted = true;
     try {
         const snap = await window._fbGet();
-        if (snap.exists()) {
-            const fbData = snap.data().vault;
-            // Si la versión en Firebase es antigua, actualizamos con los nuevos datos
-            if (!fbData._version || fbData._version < DATA_VERSION) {
-                data = DATOS_PREDETERMINADOS;
-                await window._fbSet(DATOS_PREDETERMINADOS);
-            } else {
-                data = fbData;
-            }
+        // Los datos de la nube mandan siempre. Nunca se sobrescriben al cargar:
+        // si no existen todavía se muestran los predeterminados y se guardan
+        // solo cuando el administrador haga su primer cambio.
+        const fbData = snap.exists() ? snap.data().vault : null;
+        if (fbData && Array.isArray(fbData.categories)) {
+            data = fbData;
+            try { localStorage.setItem("vault-data", JSON.stringify(fbData)); } catch {}
         } else {
             data = DATOS_PREDETERMINADOS;
-            await window._fbSet(DATOS_PREDETERMINADOS);
         }
     } catch(e) {
         console.warn("Firebase error:", e);
+        cloudOk = false;
         try { const r = localStorage.getItem("vault-data"); if(r) data = JSON.parse(r); } catch {}
+        showToast("No se pudo conectar con la nube. Estás viendo una copia guardada que puede estar desactualizada.", true, 8000);
     }
     if (data.categories?.length > 0) {
         activeCat = data.categories[0].id;
@@ -290,16 +317,31 @@ async function initApp() {
 }
 
 window.addEventListener("fb-ready", initApp, { once: true });
+window.addEventListener("fb-auth", (e) => { isAdmin = !!e.detail; if (appStarted) render(); });
 setTimeout(() => { if(document.getElementById("loadingScreen").style.display !== "none") initApp(); }, 8000);
 
 async function save(nd) {
+    if (!isAdmin) { showToast("Inicia sesión como administrador para hacer cambios.", true); return; }
+    if (!cloudOk) { showToast("Sin conexión con la nube: no se guardan cambios para no pisar los datos reales. Recarga la página.", true, 8000); return; }
+    const prev = data;
     data = nd;
+    render();
     const badge = document.getElementById("savingBadge");
     badge.style.display = "flex";
     try {
         await window._fbSet(nd);
-        localStorage.setItem("vault-data", JSON.stringify(nd));
-    } catch(e) { console.warn("Error guardando:", e); }
+        try { localStorage.setItem("vault-data", JSON.stringify(nd)); } catch {}
+    } catch(e) {
+        console.warn("Error guardando:", e);
+        data = prev; // deshacer el cambio en pantalla
+        if (e?.code === "permission-denied") {
+            showToast("Esta cuenta no tiene permiso para editar NexVault. Se cerró la sesión.", true, 7000);
+            try { await window._fbSignOut(); } catch {}
+            isAdmin = false;
+        } else {
+            showToast("No se pudo guardar el cambio. Revisa tu conexión e inténtalo de nuevo.", true);
+        }
+    }
     badge.style.display = "none";
     render();
 }
@@ -312,11 +354,11 @@ function renderAdminUI() {
     const btn = document.getElementById("adminBtn");
     const btnIcon = document.getElementById("adminIcon");
     if (isAdmin) {
-        banner.style.display = "flex"; btnText.innerText = "Administrador activo";
+        banner.style.display = "flex"; btnText.innerText = "Cerrar sesión";
         btn.style.background = "rgba(167,139,250,0.12)"; btn.style.borderColor = "rgba(167,139,250,0.4)";
         btn.style.color = "var(--purple-light)"; btnIcon.className = "ti ti-lock-open";
     } else {
-        banner.style.display = "none"; btnText.innerText = "Administrador";
+        banner.style.display = "none"; btnText.innerText = "Entrar como admin";
         btn.style.background = "rgba(255,255,255,0.04)"; btn.style.borderColor = "rgba(255,255,255,0.09)";
         btn.style.color = "var(--muted)"; btnIcon.className = "ti ti-lock";
     }
@@ -329,12 +371,15 @@ function renderCategories() {
         const item = document.createElement("div"); item.className = "cat-item";
         const btn = document.createElement("button");
         btn.className = `cat-tab ${activeCat === cat.id ? 'active' : ''}`;
-        btn.innerHTML = `<i class="ti ${cat.icon}" style="font-size:18px"></i> ${cat.name}`;
+        btn.innerHTML = `<i class="ti ${safeIcon(cat.icon)}" style="font-size:18px"></i> ${esc(cat.name)}`;
         btn.onclick = () => { activeCat = cat.id; activeSub = cat.subcategories[0]?.id || null; render(); };
         item.appendChild(btn);
         if (isAdmin) {
             const eg = document.createElement("div"); eg.className = "admin-edit-group";
-            eg.innerHTML = `<button class="btn-edit" onclick="openCrudModal('editCategory','${cat.id}')"><i class="ti ti-pencil"></i></button><button class="btn-danger" onclick="delCategory('${cat.id}')"><i class="ti ti-trash"></i></button>`;
+            eg.append(
+                adminButton("btn-edit", "ti-pencil", "", () => openCrudModal('editCategory', cat.id)),
+                adminButton("btn-danger", "ti-trash", "", () => delCategory(cat.id))
+            );
             item.appendChild(eg);
         }
         container.appendChild(item);
@@ -360,7 +405,10 @@ function renderSubcategories() {
         item.appendChild(btn);
         if (isAdmin) {
             const eg = document.createElement("div"); eg.className = "admin-edit-group";
-            eg.innerHTML = `<button class="btn-edit" onclick="openCrudModal('editSubcat','${curCat.id}','${sub.id}')"><i class="ti ti-pencil"></i></button><button class="btn-danger" onclick="delSubcat('${curCat.id}','${sub.id}')"><i class="ti ti-trash"></i></button>`;
+            eg.append(
+                adminButton("btn-edit", "ti-pencil", "", () => openCrudModal('editSubcat', curCat.id, sub.id)),
+                adminButton("btn-danger", "ti-trash", "", () => delSubcat(curCat.id, sub.id))
+            );
             item.appendChild(eg);
         }
         container.appendChild(item);
@@ -404,16 +452,22 @@ function renderLinks() {
                 const card = document.createElement("div"); card.className = "link-card";
                 card.innerHTML = `
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-                        <div class="link-title">${link.name}</div>
+                        <div class="link-title">${esc(link.name)}</div>
                         <i class="ti ti-file" style="font-size:18px;color:var(--muted);flex-shrink:0;margin-top:1px"></i>
                     </div>
-                    ${link.description ? `<p class="link-desc">${link.description}</p>` : ''}
+                    ${link.description ? `<p class="link-desc">${esc(link.description)}</p>` : ''}
                 `;
                 const actions = document.createElement("div"); actions.className = "link-actions";
-                actions.innerHTML = `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="btn-open"><i class="ti ti-external-link" style="font-size:13px"></i> Abrir</a>`;
+                const href = safeUrl(link.url);
+                actions.innerHTML = href
+                    ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="btn-open"><i class="ti ti-external-link" style="font-size:13px"></i> Abrir</a>`
+                    : `<span class="btn-open" style="opacity:0.5;cursor:not-allowed" title="Enlace no válido"><i class="ti ti-link-off" style="font-size:13px"></i> Enlace no válido</span>`;
                 if (isAdmin) {
                     const ab = document.createElement("div"); ab.style = "display:flex;gap:6px";
-                    ab.innerHTML = `<button class="btn-edit" onclick="openCrudModal('editLink','${curCat.id}','${curSub.id}','${link.id}')"><i class="ti ti-pencil"></i> Editar</button><button class="btn-danger" onclick="delLink('${curCat.id}','${curSub.id}','${link.id}')"><i class="ti ti-trash"></i></button>`;
+                    ab.append(
+                        adminButton("btn-edit", "ti-pencil", "Editar", () => openCrudModal('editLink', curCat.id, curSub.id, link.id)),
+                        adminButton("btn-danger", "ti-trash", "", () => delLink(curCat.id, curSub.id, link.id))
+                    );
                     actions.appendChild(ab);
                 }
                 card.appendChild(actions);
@@ -444,16 +498,21 @@ function renderLinks() {
     }
 }
 
-function toggleAdminMode() {
-    if (isAdmin) { isAdmin = false; render(); }
-    else { document.getElementById("loginModal").style.display = "flex"; setTimeout(() => document.getElementById("pwInput").focus(), 100); }
+async function toggleAdminMode() {
+    if (isAdmin) { await logoutAdmin(); return; }
+    if (!window._fbSignIn) { showToast("La nube no está disponible ahora mismo. Recarga la página.", true); return; }
+    try {
+        await window._fbSignIn(); // el estado se actualiza solo vía "fb-auth"
+    } catch (e) {
+        if (e?.code === "auth/popup-closed-by-user" || e?.code === "auth/cancelled-popup-request") return;
+        console.warn("Error de inicio de sesión:", e);
+        showToast("No se pudo iniciar sesión" + (e?.code ? ` (${e.code})` : "") + ".", true);
+    }
 }
-function handleLogin() {
-    const input = document.getElementById("pwInput"); const err = document.getElementById("pwError");
-    if (input.value === ADMIN_PASSWORD) { isAdmin = true; closeModal("loginModal"); input.value = ""; err.style.display = "none"; render(); }
-    else { err.innerText = "Contraseña incorrecta."; err.style.display = "block"; }
+async function logoutAdmin() {
+    try { await window._fbSignOut?.(); } catch {}
+    isAdmin = false; render();
 }
-function logoutAdmin() { isAdmin = false; render(); }
 function openExportModal() {
     document.getElementById("exportJsonBox").innerText = JSON.stringify(data, null, 2);
     document.getElementById("exportModal").style.display = "flex";
@@ -467,7 +526,6 @@ function doCopyConfig() {
 }
 function closeModal(id) {
     document.getElementById(id).style.display = "none";
-    if (id === 'loginModal') { document.getElementById("pwError").style.display = "none"; document.getElementById("pwInput").value = ""; }
 }
 
 const modalTitles = { addCategory:"Nueva categoría", editCategory:"Editar categoría", addSubcat:"Nueva subcarpeta", editSubcat:"Editar subcarpeta", addLink:"Nuevo enlace", editLink:"Editar enlace" };
@@ -481,11 +539,11 @@ function openCrudModal(type, catId=null, subId=null, linkId=null) {
     else if (type==="editSubcat") { const c=data.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); initName=s?.name||""; }
     else if (type==="editLink") { const c=data.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); const l=s?.links.find(x=>x.id===linkId); initName=l?.name||""; initUrl=l?.url||""; initDesc=l?.description||""; }
     if (type==="addCategory"||type==="editCategory") {
-        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre</label><input id="formName" class="input-style" placeholder="Ej: Música, Fotos..." value="${initName}"></div><div class="form-group"><label class="label-style">Ícono Tabler</label><input id="formIcon" class="input-style" placeholder="ti-device-gamepad-2" value="${initIcon}"><p style="font-size:11px;color:var(--muted);margin-top:6px">Ej: ti-school · ti-briefcase · ti-music · ti-code</p></div>`;
+        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre</label><input id="formName" class="input-style" placeholder="Ej: Música, Fotos..." value="${esc(initName)}"></div><div class="form-group"><label class="label-style">Ícono Tabler</label><input id="formIcon" class="input-style" placeholder="ti-device-gamepad-2" value="${esc(initIcon)}"><p style="font-size:11px;color:var(--muted);margin-top:6px">Ej: ti-school · ti-briefcase · ti-music · ti-code</p></div>`;
     } else if (type==="addSubcat"||type==="editSubcat") {
-        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre de la subcarpeta</label><input id="formName" class="input-style" placeholder="Ej: Versiones, Apuntes..." value="${initName}"></div>`;
+        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre de la subcarpeta</label><input id="formName" class="input-style" placeholder="Ej: Versiones, Apuntes..." value="${esc(initName)}"></div>`;
     } else if (type==="addLink"||type==="editLink") {
-        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre</label><input id="formName" class="input-style" placeholder="Ej: Minecraft 1.20.4" value="${initName}"></div><div class="form-group"><label class="label-style">URL / Enlace</label><input id="formUrl" class="input-style" placeholder="https://..." value="${initUrl}"></div><div class="form-group"><label class="label-style">Descripción (opcional)</label><input id="formDesc" class="input-style" placeholder="Breve descripción..." value="${initDesc}"></div>`;
+        inp.innerHTML = `<div class="form-group"><label class="label-style">Nombre</label><input id="formName" class="input-style" placeholder="Ej: Minecraft 1.20.4" value="${esc(initName)}"></div><div class="form-group"><label class="label-style">URL / Enlace</label><input id="formUrl" class="input-style" placeholder="https://..." value="${esc(initUrl)}"></div><div class="form-group"><label class="label-style">Descripción (opcional)</label><input id="formDesc" class="input-style" placeholder="Breve descripción..." value="${esc(initDesc)}"></div>`;
     }
     document.getElementById("crudModal").style.display = "flex";
     setTimeout(() => { const f=document.getElementById("formName"); if(f) f.focus(); }, 100);
@@ -495,17 +553,24 @@ function submitCrudModal() {
     if (!currentModalTarget) return;
     const { type, catId, subId, linkId } = currentModalTarget;
     const nd = JSON.parse(JSON.stringify(data));
-    const nameVal = document.getElementById("formName")?.value || "";
-    const iconVal = document.getElementById("formIcon")?.value || "";
-    const urlVal  = document.getElementById("formUrl")?.value  || "";
-    const descVal = document.getElementById("formDesc")?.value || "";
+    const nameVal = (document.getElementById("formName")?.value || "").trim();
+    const iconRaw = (document.getElementById("formIcon")?.value || "").trim();
+    const urlRaw  = (document.getElementById("formUrl")?.value  || "").trim();
+    const descVal = (document.getElementById("formDesc")?.value || "").trim();
+    if (iconRaw && !/^ti-[a-z0-9-]+$/.test(iconRaw)) { showToast("El ícono debe tener el formato ti-nombre (ej: ti-music).", true); return; }
+    const iconVal = iconRaw;
+    let urlVal = "";
+    if (type === "addLink" || (type === "editLink" && urlRaw)) {
+        urlVal = safeUrl(urlRaw) || "";
+        if (!urlVal) { showToast("La URL debe empezar por https:// o http://", true); return; }
+    }
     switch(type) {
         case "addCategory": if(!nameVal) return; nd.categories.push({id:genId(),name:nameVal,icon:iconVal||"ti-folder",subcategories:[]}); break;
         case "editCategory": { const c=nd.categories.find(x=>x.id===catId); if(c){c.name=nameVal||c.name;c.icon=iconVal||c.icon;} break; }
         case "addSubcat": { if(!nameVal) return; const c=nd.categories.find(x=>x.id===catId); const ns={id:genId(),name:nameVal,links:[]}; if(c){c.subcategories.push(ns);activeSub=ns.id;} break; }
         case "editSubcat": { const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); if(s) s.name=nameVal||s.name; break; }
         case "addLink": { if(!nameVal||!urlVal) return; const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); if(s) s.links.push({id:genId(),name:nameVal,url:urlVal,description:descVal}); break; }
-        case "editLink": { const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); const l=s?.links.find(x=>x.id===linkId); if(l){l.name=nameVal||l.name;l.url=urlVal||l.url;l.description=descVal??l.description;} break; }
+        case "editLink": { const c=nd.categories.find(x=>x.id===catId); const s=c?.subcategories.find(x=>x.id===subId); const l=s?.links.find(x=>x.id===linkId); if(l){l.name=nameVal||l.name;l.url=urlVal||l.url;l.description=descVal;} break; }
     }
     save(nd);
     closeModal("crudModal");
