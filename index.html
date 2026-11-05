@@ -115,12 +115,30 @@
 
         .links-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
         .links-count{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
-        .links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;animation:fadeUp 0.28s ease both}
-        .link-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;transition:all 0.22s ease}
-        .link-card:hover{background:var(--card-hover);border-color:rgba(167,139,250,0.25);transform:translateY(-2px);box-shadow:0 12px 40px rgba(124,58,237,0.18)}
-        .card-top{display:flex;align-items:flex-start;gap:12px}
-        .type-badge{width:38px;height:38px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--purple-light);background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(37,99,235,0.14));border:1px solid rgba(167,139,250,0.2)}
-        .card-head{flex:1;min-width:0}
+        .links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+        .link-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:0 16px 16px;display:flex;flex-direction:column;gap:10px;overflow:hidden;transition:transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s, border-color 0.25s, background 0.25s}
+        .link-card:hover{background:var(--card-hover);border-color:rgba(167,139,250,0.3);transform:translateY(-4px);box-shadow:0 16px 44px rgba(124,58,237,0.22)}
+        .card-in{animation:cardIn 0.45s cubic-bezier(.2,.8,.2,1) both}
+        @keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(0.98)}to{opacity:1;transform:none}}
+
+        /* Portada: generada (degradado + icono + iniciales) o imagen propia encima */
+        .cover{position:relative;height:118px;margin:0 -16px;overflow:hidden;background:hsl(var(--h) 45% 14%)}
+        .cover-gen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 140% at 15% 10%, hsl(var(--h) 80% 58% / 0.75), transparent 60%), linear-gradient(135deg, hsl(var(--h) 70% 36%), hsl(calc(var(--h) + 45) 65% 22%))}
+        .cover-gen::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.06) 1px,transparent 1px);background-size:16px 16px;mask-image:linear-gradient(180deg,#000 10%,transparent 95%);-webkit-mask-image:linear-gradient(180deg,#000 10%,transparent 95%)}
+        .cover-gen i{position:relative;z-index:1;font-size:42px;color:#fff;filter:drop-shadow(0 6px 16px rgba(0,0,0,0.35));transition:transform 0.35s cubic-bezier(.2,.8,.2,1)}
+        .cover-gen .initials{position:absolute;right:10px;bottom:-14px;font-size:76px;font-weight:900;letter-spacing:-3px;color:#fff;opacity:0.12;line-height:1}
+        .link-card:hover .cover-gen i{transform:scale(1.12) rotate(-6deg)}
+        .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;transition:transform 0.5s cubic-bezier(.2,.8,.2,1)}
+        .link-card:hover .cover img{transform:scale(1.06)}
+        .cover-type{position:absolute;left:10px;top:10px;z-index:3;font-family:monospace;font-size:10.5px;font-weight:700;letter-spacing:0.5px;color:#fff;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.18);border-radius:6px;padding:2px 7px}
+        .cover-new{position:absolute;left:10px;bottom:10px;z-index:3;margin:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px)}
+        .cover .icon-btn.star{position:absolute;right:8px;top:8px;z-index:3;width:32px;height:32px;border-radius:9px;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);color:#fff;font-size:17px}
+        .cover .icon-btn.star:hover{background:rgba(0,0,0,0.6)}
+        .cover .icon-btn.star.on{color:#FACC15}
+        .pop i{animation:pop 0.45s cubic-bezier(.3,1.6,.5,1)}
+        @keyframes pop{0%{transform:scale(0.6)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
+        .icon-btn.ok{color:var(--green);border-color:currentColor}
+        .card-head{min-width:0;margin-top:2px}
         .link-title{font-size:15px;font-weight:600;color:var(--white);line-height:1.3;word-break:break-word}
         .badge-new{display:inline-block;margin-left:7px;vertical-align:2px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--green);border:1px solid currentColor;border-radius:5px;padding:0 5px}
         .crumb{font-size:11px;color:var(--muted);margin-top:3px}
@@ -161,6 +179,28 @@
         .qr-url{font-family:monospace;font-size:11px;color:var(--muted);word-break:break-all;text-align:center;max-height:60px;overflow-y:auto}
         #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10000;max-width:90vw;padding:12px 18px;border-radius:10px;font-size:13px;line-height:1.5;display:none;backdrop-filter:blur(10px);background:rgba(124,58,237,0.2);border:1px solid rgba(167,139,250,0.35);color:var(--white)}
         #toast.error{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+        /* Estadísticas */
+        .stats{display:flex;flex-wrap:wrap;gap:10px;margin:-8px 0 22px}
+        .stat{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);animation:fadeUp 0.4s ease both}
+        .stat i{font-size:18px;color:var(--purple-light)}
+        .stat b{font-size:17px;font-weight:700;color:var(--white);font-variant-numeric:tabular-nums}
+        .stat span{font-size:12px;color:var(--muted)}
+        .stats:empty{display:none}
+
+        /* Carga con esqueleto */
+        .sk{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+        .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(167,139,250,0.10),transparent);animation:shimmer 1.4s infinite}
+        @keyframes shimmer{to{transform:translateX(100%)}}
+        .sk-wrap{width:100%;max-width:1100px;padding:28px 24px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px}
+        .sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+
+        /* Transición del contenido al cambiar de pestaña */
+        #linksArea.swap{animation:areaIn 0.3s ease both}
+        @keyframes areaIn{from{opacity:0}to{opacity:1}}
+
+        @media (prefers-reduced-motion: reduce){
+            *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;animation-delay:0ms !important;transition-duration:0.01ms !important}
+        }
         ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(167,139,250,0.3);border-radius:4px}
 
         @media (max-width:640px){
@@ -171,14 +211,27 @@
             .links-grid{grid-template-columns:1fr}
             .cat-tab{padding:9px 14px;font-size:13px}
             .tabs-sep{display:none}
+            .stats{gap:8px;flex-wrap:nowrap}
+            .stat{flex:1 1 0;min-width:0;justify-content:center;padding:8px 6px;gap:5px}
+            .stat i{font-size:15px}
+            .stat b{font-size:15px}
+            .stat span{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .stat:nth-child(4){display:none}
         }
     </style>
 </head>
 <body>
 
-<div id="loadingScreen">
-    <div class="spinner"></div>
-    <div style="color:var(--muted);font-size:14px;letter-spacing:1px">Conectando con la nube...</div>
+<div id="loadingScreen" aria-label="Cargando" style="justify-content:flex-start">
+    <div class="sk-wrap">
+        <div style="display:flex;align-items:center;gap:14px"><div class="sk" style="width:46px;height:46px;border-radius:12px"></div><div class="sk" style="width:160px;height:22px"></div></div>
+        <div class="sk" style="height:46px"></div>
+        <div style="display:flex;gap:8px"><div class="sk" style="width:110px;height:40px"></div><div class="sk" style="width:130px;height:40px"></div><div class="sk" style="width:100px;height:40px"></div></div>
+        <div class="sk-grid">
+            <div class="sk" style="height:220px;border-radius:16px"></div><div class="sk" style="height:220px;border-radius:16px"></div><div class="sk" style="height:220px;border-radius:16px"></div>
+            <div class="sk" style="height:220px;border-radius:16px"></div><div class="sk" style="height:220px;border-radius:16px"></div><div class="sk" style="height:220px;border-radius:16px"></div>
+        </div>
+    </div>
 </div>
 
 <div id="savingBadge">
@@ -221,6 +274,8 @@
         <span><i class="ti ti-sparkles" style="font-size:15px;margin-right:7px"></i>Modo administrador — edita, ordena, agrega y elimina lo que quieras</span>
         <button class="btn-ghost" style="padding:4px 12px;font-size:12px" onclick="logoutAdmin()">Cerrar sesión</button>
     </div>
+
+    <div class="stats" id="statsBar"></div>
 
     <div class="search-wrap">
         <i class="ti ti-search"></i>
@@ -405,9 +460,21 @@ function fileInfo(url) {
     let s = String(url || "");
     try { s = decodeURIComponent(s); } catch {}
     const m = s.match(/\.(apk|mcpack|mcaddon|mcworld|mctemplate|zip|rar|7z|pdf|docx?|xlsx?|pptx?|jar|exe)(?=[\/?#]|$)/i);
-    if (m) return FILE_TYPES[m[1].toLowerCase()];
-    return { label: "ENLACE", icon: "ti-link" };
+    if (m) { const k = m[1].toLowerCase(); return { ...FILE_TYPES[k], hue: TYPE_HUES[k] ?? 250 }; }
+    return { label: "ENLACE", icon: "ti-link", hue: 230 };
 }
+// Color base de la portada según el tipo de archivo (tono HSL).
+const TYPE_HUES = { apk: 150, mcpack: 268, mcaddon: 215, mcworld: 185, mctemplate: 185, zip: 32, rar: 32, "7z": 32, pdf: 355, doc: 212, docx: 212, xls: 140, xlsx: 140, ppt: 20, pptx: 20, jar: 25, exe: 200 };
+function hashStr(s) { let h = 0; for (const ch of String(s || "")) h = (h * 31 + ch.codePointAt(0)) >>> 0; return h; }
+function initials(name) {
+    const words = String(name || "").replace(/[^\p{L}\p{N}\s]/gu, " ").trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return "NV";
+    return (words.length === 1 ? words[0].slice(0, 2) : words[0][0] + words[1][0]).toUpperCase();
+}
+// Las imágenes solo se aceptan por https (evita contenido mixto y esquemas raros).
+function safeImage(u) { const s = safeUrl(u); return s && s.startsWith("https:") ? s : null; }
+let popId = null;
+let noAnim = false;   // evita repetir la animación de entrada en cambios pequeños (favorito, recientes)
 
 let toastTimer = null;
 function showToast(msg, isError = false, ms = 4000) {
@@ -518,7 +585,33 @@ async function save(nd) {
 }
 
 // ── Render ───────────────────────────────────────────────────────────────
-function render() { ensureSelection(); renderAdminUI(); renderTabs(); renderSubcategories(); renderLinks(); }
+let lastViewKey = "";
+function render() {
+    ensureSelection(); renderAdminUI(); renderStats(); renderTabs(); renderSubcategories(); renderLinks();
+    // Fundido suave solo cuando cambia lo que se está viendo (pestaña, carpeta o búsqueda).
+    const key = [view, activeCat, activeSub, query ? "q" : ""].join("|");
+    const area = document.getElementById("linksArea");
+    if (key !== lastViewKey && !noAnim) { area.classList.remove("swap"); void area.offsetWidth; area.classList.add("swap"); }
+    lastViewKey = key;
+}
+
+function renderStats() {
+    const bar = document.getElementById("statsBar");
+    const links = allLinks();
+    const subs = data.categories.reduce((a, c) => a + c.subcategories.filter(s => s.links.length).length, 0);
+    const types = new Set(links.map(e => fileInfo(e.link.url).label)).size;
+    if (!links.length) { bar.innerHTML = ""; return; }
+    const latest = links.reduce((m, e) => Number.isFinite(e.link.addedAt) && e.link.addedAt > m ? e.link.addedAt : m, 0);
+    const ago = latest ? Math.floor((Date.now() - latest) / 864e5) : null;
+    const items = [
+        ["ti-files", links.length, links.length === 1 ? "archivo" : "archivos"],
+        ["ti-folders", subs, subs === 1 ? "carpeta" : "carpetas"],
+        ["ti-category", types, types === 1 ? "tipo" : "tipos"]
+    ];
+    const html = items.map(([i, n, l], k) => `<div class="stat" style="animation-delay:${k * 60}ms"><i class="ti ${i}"></i><b>${n}</b><span>${l}</span></div>`).join("")
+        + (ago !== null ? `<div class="stat" style="animation-delay:180ms"><i class="ti ti-sparkles"></i><span>Última novedad ${ago === 0 ? "hoy" : ago === 1 ? "ayer" : `hace ${ago} días`}</span></div>` : "");
+    if (bar.dataset.h !== html) { bar.innerHTML = html; bar.dataset.h = html; } // solo se anima si cambia
+}
 
 function renderAdminUI() {
     const banner = document.getElementById("adminBanner");
@@ -698,27 +791,33 @@ function buildCard({ link, cat, sub }, showCrumb, ctx, idx, total) {
     const tags = Array.isArray(link.tags) ? link.tags : [];
     const version = cleanVersion(link.version);
     const fav = favs.has(link.id);
+    const img = safeImage(link.image);
+    const hue = (info.hue ?? 250) + (hashStr(link.name) % 31) - 15;
 
-    const card = document.createElement("div"); card.className = "link-card";
+    const card = document.createElement("div"); card.className = "link-card" + (noAnim ? "" : " card-in");
+    card.style.animationDelay = `${Math.min(idx, 12) * 40}ms`;
     card.innerHTML = `
-        <div class="card-top">
-            <div class="type-badge"><i class="ti ${info.icon}"></i></div>
-            <div class="card-head">
-                <div class="link-title">${esc(link.name)}${isNew(link) ? '<span class="badge-new">Nuevo</span>' : ""}</div>
-                ${showCrumb ? `<div class="crumb">${esc(cat.name)} › ${esc(sub.name)}</div>` : ""}
-            </div>
+        <div class="cover" style="--h:${hue}">
+            <div class="cover-gen"><i class="ti ${info.icon}"></i><span class="initials">${esc(initials(link.name))}</span></div>
+            ${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
+            <span class="cover-type">${esc(info.label)}</span>
+            ${isNew(link) ? '<span class="badge-new cover-new">Nuevo</span>' : ""}
         </div>
-        <div class="chips">
-            <span class="chip chip-type">${esc(info.label)}</span>
+        <div class="card-head">
+            <div class="link-title">${esc(link.name)}</div>
+            ${showCrumb ? `<div class="crumb">${esc(cat.name)} › ${esc(sub.name)}</div>` : ""}
+        </div>
+        ${version || tags.length || host ? `<div class="chips">
             ${version ? `<span class="chip">v${esc(version)}</span>` : ""}
             ${tags.map(t => `<span class="chip chip-tag">#${esc(t)}</span>`).join("")}
             ${host ? `<span class="chip">${esc(host)}</span>` : ""}
-        </div>
+        </div>` : ""}
         ${link.description ? `<p class="link-desc">${esc(link.description)}</p>` : ""}
     `;
-    card.querySelector(".card-top").appendChild(
-        iconButton(fav ? "ti-star-filled" : "ti-star", fav ? "Quitar de favoritos" : "Añadir a favoritos", () => toggleFav(link.id), "star" + (fav ? " on" : ""))
-    );
+    // Si la imagen falla, se queda la portada generada.
+    card.querySelector(".cover img")?.addEventListener("error", (e) => e.target.remove());
+    const star = iconButton(fav ? "ti-star-filled" : "ti-star", fav ? "Quitar de favoritos" : "Añadir a favoritos", () => toggleFav(link.id), "star" + (fav ? " on" : "") + (popId === link.id ? " pop" : ""));
+    card.querySelector(".cover").appendChild(star);
 
     const actions = document.createElement("div"); actions.className = "link-actions";
     const left = document.createElement("div"); left.className = "actions-left";
@@ -727,7 +826,8 @@ function buildCard({ link, cat, sub }, showCrumb, ctx, idx, total) {
         a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer"; a.className = "btn-open";
         a.innerHTML = `<i class="ti ti-external-link" style="font-size:13px"></i> Abrir`;
         a.addEventListener("click", () => addRecent(link.id));
-        left.append(a, iconButton("ti-copy", "Copiar enlace", () => copyLink(href)), iconButton("ti-qrcode", "Ver código QR", () => openQr(link.name, href)));
+        const copyBtn = iconButton("ti-copy", "Copiar enlace", () => copyLink(href, copyBtn));
+        left.append(a, copyBtn, iconButton("ti-qrcode", "Ver código QR", () => openQr(link.name, href)));
     } else {
         left.innerHTML = `<span class="btn-open" style="opacity:0.5;cursor:not-allowed" title="Enlace no válido"><i class="ti ti-link-off" style="font-size:13px"></i> Enlace no válido</span>`;
     }
@@ -748,19 +848,24 @@ function buildCard({ link, cat, sub }, showCrumb, ctx, idx, total) {
 
 // ── Acciones del visitante ───────────────────────────────────────────────
 function toggleFav(id) {
-    if (favs.has(id)) { favs.delete(id); showToast("Quitado de favoritos", false, 1800); }
-    else { favs.add(id); showToast("Añadido a favoritos ★", false, 1800); }
+    if (favs.has(id)) { favs.delete(id); popId = null; showToast("Quitado de favoritos", false, 1800); }
+    else { favs.add(id); popId = id; showToast("Añadido a favoritos ★", false, 1800); }
     LS.set("nv-favs", [...favs]);
-    render();
+    noAnim = true; render(); noAnim = false;
+    popId = null;
 }
 function addRecent(id) {
     recents = [{ id, t: Date.now() }, ...recents.filter(r => r.id !== id)].slice(0, 12);
     LS.set("nv-recent", recents);
-    setTimeout(render, 0);
+    setTimeout(() => { noAnim = true; render(); noAnim = false; }, 0);
 }
-function copyLink(href) {
+function copyLink(href, btn) {
     navigator.clipboard.writeText(href)
-        .then(() => showToast("Enlace copiado", false, 1800))
+        .then(() => {
+            showToast("Enlace copiado", false, 1800);
+            const i = btn?.querySelector("i");
+            if (i) { i.className = "ti ti-check"; btn.classList.add("ok"); setTimeout(() => { i.className = "ti ti-copy"; btn.classList.remove("ok"); }, 1400); }
+        })
         .catch(() => showToast("No se pudo copiar el enlace", true));
 }
 function openQr(name, href) {
@@ -853,6 +958,7 @@ function sanitizeData(o) {
                     if (l.version) out.version = String(l.version);
                     if (Array.isArray(l.tags) && l.tags.length) out.tags = l.tags.map(String).slice(0, 8);
                     if (Number.isFinite(l.addedAt)) out.addedAt = l.addedAt;
+                    if (safeImage(l.image)) out.image = safeImage(l.image);
                     return out;
                 })
             }))
@@ -898,6 +1004,7 @@ function openCrudModal(type, catId = null, subId = null, linkId = null) {
         const e = type === "editLink" ? l : null;
         inp.innerHTML = field("formName", "Nombre", e?.name, "Ej: Minecraft 26.30")
                       + field("formUrl", "URL / Enlace", e?.url, "https://...", "El tipo de archivo (APK, MCPACK…) se detecta solo a partir de la URL.")
+                      + field("formImage", "Imagen de portada (opcional)", e?.image, "https://.../imagen.png", "URL https de una imagen. Si la dejas vacía, se genera una portada automática.")
                       + field("formVersion", "Versión (opcional)", e?.version, "Ej: 1.21 · 26.30")
                       + field("formTags", "Etiquetas (opcional)", (e?.tags || []).join(", "), "Ej: bp, rp, experimental", "Sepáralas con comas.")
                       + field("formDesc", "Descripción (opcional)", e?.description, "Breve descripción...");
@@ -918,10 +1025,15 @@ function submitCrudModal() {
 
     if (iconVal && !/^ti-[a-z0-9-]+$/.test(iconVal)) { showToast("El ícono debe tener el formato ti-nombre (ej: ti-music).", true); return; }
     if ((type === "addCategory" || type === "addSubcat" || type === "addLink") && !nameVal) { showToast("Escribe un nombre.", true); return; }
-    let urlVal = "";
+    let urlVal = "", imageVal = "";
     if (type === "addLink" || type === "editLink") {
         urlVal = safeUrl(urlRaw) || "";
         if (!urlVal) { showToast("La URL debe empezar por https:// o http://", true); return; }
+        const imageRaw = val("formImage");
+        if (imageRaw) {
+            imageVal = safeImage(imageRaw) || "";
+            if (!imageVal) { showToast("La imagen debe ser una URL que empiece por https://", true); return; }
+        }
     }
 
     const c = nd.categories.find(x => x.id === catId);
@@ -935,6 +1047,7 @@ function submitCrudModal() {
             const nl = { id: genId(), name: nameVal, url: urlVal, description: descVal, addedAt: Date.now() };
             if (versionVal) nl.version = versionVal;
             if (tagsVal.length) nl.tags = tagsVal;
+            if (imageVal) nl.image = imageVal;
             s.links.push(nl);
         } break;
         case "editLink": {
@@ -943,6 +1056,7 @@ function submitCrudModal() {
                 l.name = nameVal || l.name; l.url = urlVal; l.description = descVal;
                 if (versionVal) l.version = versionVal; else delete l.version;
                 if (tagsVal.length) l.tags = tagsVal; else delete l.tags;
+                if (imageVal) l.image = imageVal; else delete l.image;
             }
             break;
         }
