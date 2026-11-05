@@ -1,8 +1,8 @@
 // Service worker de NexVault: permite instalar la web como app y abrirla sin conexión.
 // Estrategia "primero la red": siempre intenta traer la versión nueva y solo usa la copia
 // guardada si no hay internet. Los datos de Firestore NUNCA se guardan aquí.
-const CACHE = "nexvault-v1";
-const SHELL = ["./", "./index.html", "./icon.svg", "./manifest.webmanifest"];
+const CACHE = "nexvault-v2";
+const SHELL = ["./", "./index.html", "./icon.svg", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./manifest.webmanifest"];
 const CDN_HOSTS = ["cdn.jsdelivr.net", "www.gstatic.com"];
 
 self.addEventListener("install", (e) => {
