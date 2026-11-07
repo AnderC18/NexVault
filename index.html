@@ -265,6 +265,7 @@
             </div>
         </div>
         <div class="btn-group">
+            <button class="btn-primary" id="appBtn" style="display:none" onclick="document.getElementById('appModal').style.display='flex'"><i class="ti ti-brand-android" style="font-size:16px"></i> Descargar app</button>
             <button class="btn-ghost square" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema"><i class="ti ti-sun" id="themeIcon" style="font-size:16px"></i></button>
             <button class="btn-ghost admin-only" onclick="openExportModal()"><i class="ti ti-download" style="font-size:15px"></i> Copia de seguridad</button>
             <button class="btn-ghost admin-only" onclick="document.getElementById('importFile').click()"><i class="ti ti-file-import" style="font-size:15px"></i> Importar</button>
@@ -316,6 +317,23 @@
             <button class="btn-ghost" onclick="closeModal('exportModal')">Cerrar</button>
             <button class="btn-ghost" id="copyBtn" onclick="doCopyConfig()"><i class="ti ti-copy" style="font-size:14px"></i> Copiar</button>
             <button class="btn-primary" onclick="downloadBackup()"><i class="ti ti-download" style="font-size:14px"></i> Descargar .json</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal descargar app -->
+<div class="modal-overlay" id="appModal" onclick="closeModal('appModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-title"><i class="ti ti-brand-android" style="margin-right:8px"></i>NexVault para Android</div>
+        <ol style="font-size:13px;color:var(--muted);line-height:1.7;margin:0;padding-left:20px">
+            <li>Descarga el archivo APK en tu móvil.</li>
+            <li>Ábrelo y, si Android lo pide, permite instalar apps desde esa fuente.</li>
+            <li>Pulsa <b>Instalar</b> y abre NexVault desde tus aplicaciones.</li>
+        </ol>
+        <p class="hint" style="margin-top:14px">Solo para Android. La app se actualiza sola junto con la web.</p>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="closeModal('appModal')">Cerrar</button>
+            <a class="btn-primary" id="appDownloadLink" style="text-decoration:none" target="_blank" rel="noopener noreferrer"><i class="ti ti-download" style="font-size:14px"></i> Descargar APK</a>
         </div>
     </div>
 </div>
@@ -904,7 +922,7 @@ document.getElementById("searchClear").onclick = () => { clearSearch(); searchIn
 document.addEventListener("keydown", (e) => {
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
     if (e.key === "/" && !typing) { e.preventDefault(); searchInput.focus(); }
-    if (e.key === "Escape") ["crudModal", "exportModal", "qrModal"].forEach(closeModal);
+    if (e.key === "Escape") ["crudModal", "exportModal", "qrModal", "appModal"].forEach(closeModal);
 });
 
 // ── Administración ───────────────────────────────────────────────────────
@@ -1095,6 +1113,17 @@ function delLink(catId, subId, linkId) {
     if (s) s.links = s.links.filter(l => l.id !== linkId);
     save(nd);
 }
+
+// ── Descarga de la app Android ───────────────────────────────────────────
+// Enlace SOLO al .apk. Nunca al .zip de PWABuilder: incluye la clave de firma.
+const APP_DOWNLOAD_URL = "https://www.mediafire.com/file/q2yync4f1e46amy/NexVault.apk/file";
+function setupAppDownload(url) {
+    const href = safeUrl(url);
+    const installed = window.matchMedia("(display-mode: standalone)").matches;
+    document.getElementById("appBtn").style.display = href && !installed ? "inline-flex" : "none";
+    if (href) document.getElementById("appDownloadLink").href = href;
+}
+setupAppDownload(APP_DOWNLOAD_URL);
 
 // ── App instalable / sin conexión ────────────────────────────────────────
 if ("serviceWorker" in navigator) {
